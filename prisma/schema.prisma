@@ -1,0 +1,175 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+    provider     = "mysql"
+    url          = env("DATABASE_URL")
+    relationMode = "prisma"
+}
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+enum UserType {
+    NORMAL
+    GOOGLE
+}
+
+enum UserPosition {
+    NORMAL
+    WORKER
+    ADMIN
+}
+
+// Necessary for Next auth
+model Account {
+    id                String  @id @default(cuid())
+    userId            String
+    type              String
+    provider          String
+    providerAccountId String
+    refresh_token     String? @db.Text
+    access_token      String? @db.Text
+    expires_at        Int?
+    token_type        String?
+    scope             String?
+    id_token          String? @db.Text
+    session_state     String?
+    user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([provider, providerAccountId])
+    @@index([userId])
+}
+
+model Session {
+    id           String   @id @default(cuid())
+    sessionToken String   @unique
+    userId       String
+    memberId     String
+    expires      DateTime
+    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId])
+}
+
+model User {
+    id               String       @id @default(cuid())
+    name             String?      @unique
+    email            String?      @unique
+    password         String?
+    emailVerified    DateTime?
+    image            String?
+    type             UserPosition @default(NORMAL)
+    platformType     UserType     @default(GOOGLE)
+    subscriptionPlan String?      @default("NONE")
+    accounts         Account[]
+    sessions         Session[]
+    channels         Channel[]
+    member           Member[]
+    review           Review?
+}
+
+model Review {
+    id            String   @id @default(cuid())
+    content       String
+    ratingSupport Int
+    ratingPrice   Int
+    ratingQuality Int
+    createdAt     DateTime @default(now())
+    user          User     @relation(fields: [userId], references: [id])
+    userId        String
+
+    @@unique([userId])
+}
+
+model Member {
+    id String @id @default(uuid())
+
+    userId String
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    Messages Messsage[]
+
+    directMessages DirectMassage[]
+
+    conversationsInitiated Conversation[] @relation("MemberOne")
+    conversationsRecived   Conversation[] @relation("MemberTwo")
+
+    @@index([userId])
+}
+
+model Channel {
+    id   String @id @default(uuid())
+    name String
+
+    userId String
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    Messages Messsage[]
+
+    @@index([userId])
+}
+
+model Messsage {
+    id      String @id @default(uuid())
+    content String @db.Text
+
+    fileUrl  String? @db.Text
+    memberID String
+    member   Member  @relation(fields: [memberID], references: [id], onDelete: Cascade)
+
+    channelId String
+    channel   Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+    deleted Boolean @default(false)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([channelId])
+    @@index([memberID])
+}
+
+model Conversation {
+    id          String @id @default(uuid())
+    name        String
+    memberOneId String
+    memberOne   Member @relation("MemberOne", fields: [memberOneId], references: [id], onDelete: Cascade)
+
+    memberTwoId String
+    memberTwo   Member @relation("MemberTwo", fields: [memberTwoId], references: [id], onDelete: Cascade)
+
+    directMassage DirectMassage[]
+
+    @@unique([memberOneId, memberTwoId])
+    @@index([memberTwoId])
+}
+
+model DirectMassage {
+    id      String  @id @default(uuid())
+    content String  @db.Text
+    fileUrl String? @db.Text
+
+    memberId String
+    member   Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+    conversationId String
+    conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    deleted Boolean @default(false)
+
+    @@index([memberId])
+    @@index([conversationId])
+}
+
+model VerificationToken {
+    identifier String
+    token      String   @unique
+    expires    DateTime
+
+    @@unique([identifier, token])
+}
