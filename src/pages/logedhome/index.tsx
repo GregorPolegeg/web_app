@@ -8,9 +8,9 @@ const index = () => {
   const subscriptionPlan = session?.user.subscriptionPlan;
 
   return (
-    <div className="w-full">
+    <div className="h-full pt-[72px]">
       {subscriptionPlan !== "NONE" ? (
-        <div className="mt-7 flex h-full w-full">
+        <div className="flex h-full">
           <DisplayConversationElement />
         </div>
       ) : (

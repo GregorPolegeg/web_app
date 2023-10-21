@@ -12,11 +12,9 @@ const poppins = Poppins({
 export default function Home() {
   const { data: session } = useSession();
   return (
-    <>
+    <div className="h-screen">
       <UserNavigation/>
-      <div className="w-full flex justify-center mt-10">
         {session? <LogedPage/> : <HomePage/> }
-      </div>
-    </>
+    </div>
   );
 }

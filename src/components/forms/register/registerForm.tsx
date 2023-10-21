@@ -13,6 +13,7 @@ const RegisterForm = () => {
     handleSubmit,
     formState: { errors },
   } = useForm();
+  
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [passwordVisible2, setPasswordVisible2] = useState(false);
 
