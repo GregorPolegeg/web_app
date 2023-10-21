@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ChatInput } from "~/pages/api/chat/chat-input";
 import { useSession } from "next-auth/react";
 import { BsTrash } from "react-icons/bs";
+import { useSocket } from "~/pages/api/providers/socket-provider";
 
 interface Data {
   id: string;
@@ -25,6 +26,7 @@ interface MessageData {
 }
 
 const DisplayConversationElement = () => {
+  const { socket } = useSocket();
   const { data: session } = useSession();
   const [messages, setMessages] = useState<MessageData[]>([]);
   //left menu
@@ -80,6 +82,16 @@ const DisplayConversationElement = () => {
   }
 
   useEffect(() => {
+    if (socket) {
+      socket.on('newMessage', (newMessage : MessageData) => {
+          setMessages(messages => [...messages, newMessage]);
+      });
+
+      return () => {
+          // Clean up the listener when the component unmounts
+          socket.off('newMessage');
+      }
+  }
     //get all user conversations
     if (session?.user.id) {
       const fetchDetails = async () => {
@@ -105,7 +117,7 @@ const DisplayConversationElement = () => {
 
       fetchDetails();
     }
-  }, [session?.user.id, update]);
+  }, [session?.user.id, update, socket]);
 
   if (session?.user.memberId) {
     return (
@@ -119,7 +131,7 @@ const DisplayConversationElement = () => {
             <div>No conversations</div>
           ) : (
             <div>
-              <h2 className="p-5 text-center text-xl font-bold">Messages</h2>
+              <h2 className="p-5 border-b  border-gray-400 text-center text-xl font-bold">Messages</h2>
               {conversations.map((conversation: Data) => (
                 <div
                   key={conversation.id}
@@ -127,7 +139,7 @@ const DisplayConversationElement = () => {
                     setSelectedcConversation(conversation.id);
                     getDirectMessages(conversation.id);
                   }}
-                  className="py flex w-full items-center justify-between border-y border-gray-400 px-2 py-3 focus:outline-none"
+                  className="py flex w-full items-center justify-between border-b border-gray-400 px-2 py-3 focus:outline-none"
                   role="button"
                   tabIndex={0}
                   onKeyDown={(event) => {
@@ -262,10 +274,10 @@ const DisplayConversationElement = () => {
                 {messages.map((message) => (
                   <div
                     key={message.id}
-                    className={`my-2 max-w-lg rounded-xl p-3 ${
+                    className={`my-2 text-normal font-semibold max-w-lg rounded-xl px-3 py-1 ${
                       message.memberId === session?.user.memberId
-                        ? "ml-auto bg-blue-400 text-white"
-                        : "mr-auto bg-gray-100"
+                        ? "ml-auto bg-blue-600 text-white"
+                        : "mr-auto bg-gray-400"
                     }`}
                   >
                     {message.fileUrl && (
