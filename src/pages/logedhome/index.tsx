@@ -9,7 +9,7 @@ const index = () => {
 
   const { isConnected } = useSocket();
 
-  if (!isConnected) {
+  if (isConnected) {
     return <></>;
   }
   return (

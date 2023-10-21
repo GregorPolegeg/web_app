@@ -1,10 +1,10 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { db } from "~/lib/db";
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+
   // Check for HTTP method
   if (req.method !== "POST") {
     return res.status(405).json({ message: "Method Not Allowed" });
@@ -32,7 +32,6 @@ export default async function handler(
         conversationId: conversationId,
       },
     });
-
     // Return a 201 Created status code upon successful creation
     return res.status(201).json({ message: "Message successfully created", data: createdMessage });
 

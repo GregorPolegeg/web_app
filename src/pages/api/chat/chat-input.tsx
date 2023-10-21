@@ -1,4 +1,5 @@
 import { Controller, useForm } from "react-hook-form";
+import { useSocket } from "../providers/socket-provider";
 
 interface ChatInputProps {
   senderId: string;
@@ -11,12 +12,19 @@ export const ChatInput = ({
   conversationId,
   type,
 }: ChatInputProps) => {
+  const { socket } = useSocket();
   const onSubmit = async (data: Object) => {
     const response = await fetch("/api/chat/sendMessage", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({data ,senderId, conversationId, type}),
     });
+    if(response.ok){
+      const {data} = await response.json();
+      socket.emit('sendMessage', {
+        data
+    })
+    }
 
     // After submitting, reset the form fields.
     reset();
