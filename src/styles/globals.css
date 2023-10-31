@@ -7,3 +7,8 @@
     outline: none;
     box-shadow: none;
 }
+
+.text-normal:hover .hidden {
+    display: block;
+  }
+  

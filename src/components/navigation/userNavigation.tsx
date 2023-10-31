@@ -7,15 +7,20 @@ import { signIn, signOut, useSession } from "next-auth/react";
 const navContent = {
   Admin: ["Home", "test"],
   User: ["Home", "About", "Reviews", "Plans", "Contacts"],
-  LogedUser: ["Home", "About", "Reviews", "Plans", "Contacts"],
+  LogedUser: ["Messages", "Form", "Suppor Groups", "Contacts"],
   Provider: ["Home", "test"],
 };
 
-const userNavItems = navContent["User"];
 
 const UserNavigation = () => {
   const { data: sessionData } = useSession(); 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  
+  let userNavItems = navContent["User"];
+
+  if(sessionData?.user){
+    userNavItems = navContent["LogedUser"];
+  }
 
   return (
     <>
@@ -50,7 +55,7 @@ const UserNavigation = () => {
 
         {/* Desktop Login */}
         <div className="hidden md:flex text-xl font-bold">
-          {!sessionData? (<Link href="/login">Login</Link>): (<button onClick={() => void signOut()}>Logout</button>)}
+          {!sessionData? (<Link href="/login">Login</Link>): (<button onClick={() => void signOut()}>{sessionData.user.name}</button>)}
         </div>
 
         {/* Mobile Menu */}

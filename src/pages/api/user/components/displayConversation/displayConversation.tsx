@@ -132,33 +132,35 @@ const DisplayConversationElement = () => {
       console.error("An error occurred:", error);
     }
   }
-  function joinConversation(conversation : string){
+  function joinConversation(conversation: string) {
     if (socket) {
       socket.emit("joinConversation", conversation);
-  }
+    }
   }
 
   useEffect(() => {
     if (socket) {
-        // Define the message handler
-        const handleNewMessage = (conversationId: string, newMessage: MessageData) => {
-            if (conversationId === selectedConversation) {
-                setMessages((messages) => [newMessage, ...messages]);
-            }
-        };
-        
-        // Attach the event listener
-        socket.on('newMessage', handleNewMessage);
+      // Define the message handler
+      const handleNewMessage = (
+        conversationId: string,
+        newMessage: MessageData,
+      ) => {
+        if (conversationId === selectedConversation) {
+          setMessages((messages) => [newMessage, ...messages]);
+        }
+      };
 
-        // Clean up: remove the event listener when the component is unmounted or when selectedConversation changes
-        return () => {
-            socket.off('newMessage', handleNewMessage);
-        };
+      // Attach the event listener
+      socket.on("newMessage", handleNewMessage);
+
+      // Clean up: remove the event listener when the component is unmounted or when selectedConversation changes
+      return () => {
+        socket.off("newMessage", handleNewMessage);
+      };
     }
-}, [socket, selectedConversation]);
+  }, [socket, selectedConversation]);
 
   useEffect(() => {
-
     //get all user conversations
     if (session?.user.id) {
       const fetchDetails = async () => {
@@ -198,7 +200,7 @@ const DisplayConversationElement = () => {
             <div>No conversations</div>
           ) : (
             <div>
-              <h2 className="border-b border-gray-400  p-5 text-center text-xl font-bold">
+              <h2 className="border-b border-gray-300  p-5 text-center text-xl font-bold">
                 Messages
               </h2>
               {conversations.map((conversation: Data) => (
@@ -207,9 +209,9 @@ const DisplayConversationElement = () => {
                   onClick={() => {
                     setSelectedcConversation(conversation.id);
                     getDirectMessages(conversation.id);
-                    joinConversation(conversation.id)
+                    joinConversation(conversation.id);
                   }}
-                  className="py flex w-full items-center justify-between border-b border-gray-400 px-2 py-3 focus:outline-none"
+                  className="py flex w-full items-center justify-between border-b border-gray-300 px-2 py-3 duration-300 hover:bg-gray-200 focus:outline-none"
                   role="button"
                   tabIndex={0}
                   onKeyDown={(event) => {
@@ -229,7 +231,7 @@ const DisplayConversationElement = () => {
                       </p>
                     </div>
                   </div>
-                  <div className="p-3 text-base">
+                  <div className="p-3 text-base duration-300 hover:text-red-600">
                     <button
                       onClick={(event) => {
                         event.stopPropagation();
@@ -345,28 +347,31 @@ const DisplayConversationElement = () => {
                 ref={messageContainerRef}
               >
                 {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`text-normal my-2 max-w-lg rounded-xl px-3 py-1 font-semibold ${
-                      message.memberId === session?.user.memberId
-                        ? "ml-auto bg-blue-600 text-white"
-                        : "mr-auto bg-gray-400"
-                    }`}
-                  >
-                    {message.fileUrl && (
-                      <img src={message.fileUrl} alt="Sent file" />
-                    )}
-                    <p>{message.content}</p>
-                    <small className="block text-right text-xs">
-                      {new Date(message.createdAt).toLocaleTimeString()}
-                    </small>
-                  </div>
+                    <div
+                      key={message.id}
+                      className={`text-normal my-2 max-w-lg rounded-xl px-2 py-1 font-semibold relative ${
+                        message.memberId === session?.user.memberId
+                          ? "ml-auto bg-blue-600 text-white"
+                          : "mr-auto bg-gray-400"
+                      }`}
+                    >
+                      {message.fileUrl && (
+                        <img src={message.fileUrl} alt="Sent file" />
+                      )}
+                      <p>{message.content}</p>
+                      <small className="block text-right text-xs">
+                        {new Date(message.createdAt).toLocaleTimeString()}
+                      </small>
+                      <div className={`hidden hover:text-red-600 text-normal absolute top-1/3 text-black ${message.memberId === session?.user.memberId ? "pr-2 right-[100%]" : "pl-2 left-[100%]"}`}>
+                        <BsTrash/>
+                      </div>
+                    </div>
                 ))}
               </div>
             )}
           </div>
 
-          <div className="h-[50px] pt-2 flex-shrink-0">
+          <div className="h-[50px] flex-shrink-0 pt-2">
             <ChatInput
               senderId={session?.user.memberId}
               conversationId={selectedConversation}
