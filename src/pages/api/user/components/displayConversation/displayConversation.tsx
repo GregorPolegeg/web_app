@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChatInput } from "~/pages/api/chat/chat-input";
 import { useSession } from "next-auth/react";
 import { BsTrash } from "react-icons/bs";
@@ -39,7 +39,58 @@ const DisplayConversationElement = () => {
   const [selectedGender, setSelectedGender] = useState<string>("");
   const [update, setUpdate] = useState(true);
 
+  const messageContainerRef = useRef<HTMLDivElement>(null);
+  const [cursor, setCursor] = useState(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (messageContainerRef.current) {
+        const { scrollTop, scrollHeight, clientHeight } =
+          messageContainerRef.current;
+        if (Math.abs(scrollHeight - clientHeight + scrollTop) == 0) {
+          loadOldMessages();
+        }
+      }
+    };
+
+    if (messageContainerRef.current) {
+      const messageContainer = messageContainerRef.current;
+      messageContainer.addEventListener("scroll", handleScroll);
+
+      return () => {
+        messageContainer.removeEventListener("scroll", handleScroll);
+      };
+    }
+  }, [cursor]);
+
+  async function loadOldMessages() {
+    if (cursor) {
+      try {
+        const response = await fetch("/api/chat/directMessages/route", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: session?.user.id,
+            conversationId: selectedConversation,
+            cursor: cursor,
+          }),
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setMessages((prevMessages) => [...prevMessages, ...data.items]);
+          setCursor(data.nextCursor);
+        }
+      } catch (error) {
+        console.error(
+          "An error occurred while fetching older messages:",
+          error,
+        );
+      }
+    }
+  }
+
   async function getDirectMessages(conversationId: string) {
+    setCursor(null);
     try {
       const response = await fetch("/api/chat/directMessages/route", {
         method: "POST",
@@ -52,6 +103,7 @@ const DisplayConversationElement = () => {
       if (response.ok) {
         const data = await response.json();
         setMessages(data.items);
+        setCursor(data.nextCursor);
       }
     } catch (error) {
       console.error("An error occurred while fetching direct messages:", error);
@@ -80,18 +132,33 @@ const DisplayConversationElement = () => {
       console.error("An error occurred:", error);
     }
   }
+  function joinConversation(conversation : string){
+    if (socket) {
+      socket.emit("joinConversation", conversation);
+  }
+  }
 
   useEffect(() => {
     if (socket) {
-      socket.on('newMessage', (newMessage : MessageData) => {
-          setMessages(messages => [...messages, newMessage]);
-      });
+        // Define the message handler
+        const handleNewMessage = (conversationId: string, newMessage: MessageData) => {
+            if (conversationId === selectedConversation) {
+                setMessages((messages) => [newMessage, ...messages]);
+            }
+        };
+        
+        // Attach the event listener
+        socket.on('newMessage', handleNewMessage);
 
-      return () => {
-          // Clean up the listener when the component unmounts
-          socket.off('newMessage');
-      }
-  }
+        // Clean up: remove the event listener when the component is unmounted or when selectedConversation changes
+        return () => {
+            socket.off('newMessage', handleNewMessage);
+        };
+    }
+}, [socket, selectedConversation]);
+
+  useEffect(() => {
+
     //get all user conversations
     if (session?.user.id) {
       const fetchDetails = async () => {
@@ -124,20 +191,23 @@ const DisplayConversationElement = () => {
       <div className="flex h-full w-full overflow-hidden">
         {" "}
         {/* overflow-hidden added here */}
-        <div className="h-full w-full bg-gray-300 md:w-[400px] md:min-w-[400px]">
+        <div className="h-full w-full md:w-[400px] md:min-w-[400px]">
           {conversations === null ? (
             <div>Loading...</div>
           ) : conversations.length === 0 ? (
             <div>No conversations</div>
           ) : (
             <div>
-              <h2 className="p-5 border-b  border-gray-400 text-center text-xl font-bold">Messages</h2>
+              <h2 className="border-b border-gray-400  p-5 text-center text-xl font-bold">
+                Messages
+              </h2>
               {conversations.map((conversation: Data) => (
                 <div
                   key={conversation.id}
                   onClick={() => {
                     setSelectedcConversation(conversation.id);
                     getDirectMessages(conversation.id);
+                    joinConversation(conversation.id)
                   }}
                   className="py flex w-full items-center justify-between border-b border-gray-400 px-2 py-3 focus:outline-none"
                   role="button"
@@ -173,7 +243,7 @@ const DisplayConversationElement = () => {
             </div>
           )}
         </div>
-        <div className="flex h-full w-full flex-col bg-gray-200 p-5">
+        <div className="flex h-full w-full flex-col bg-gray-100 p-5">
           <div className="flex flex-grow flex-col-reverse overflow-y-auto">
             {" "}
             {/* overflow-y-auto added here */}
@@ -270,11 +340,14 @@ const DisplayConversationElement = () => {
                 )}
               </>
             ) : (
-              <div className="flex flex-grow flex-col-reverse overflow-y-auto">
+              <div
+                className="flex flex-grow flex-col-reverse overflow-y-auto"
+                ref={messageContainerRef}
+              >
                 {messages.map((message) => (
                   <div
                     key={message.id}
-                    className={`my-2 text-normal font-semibold max-w-lg rounded-xl px-3 py-1 ${
+                    className={`text-normal my-2 max-w-lg rounded-xl px-3 py-1 font-semibold ${
                       message.memberId === session?.user.memberId
                         ? "ml-auto bg-blue-600 text-white"
                         : "mr-auto bg-gray-400"
@@ -293,7 +366,7 @@ const DisplayConversationElement = () => {
             )}
           </div>
 
-          <div className="h-[50px] flex-shrink-0">
+          <div className="h-[50px] pt-2 flex-shrink-0">
             <ChatInput
               senderId={session?.user.memberId}
               conversationId={selectedConversation}

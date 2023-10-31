@@ -1,6 +1,7 @@
 import { DirectMessage } from "@prisma/client";
 import { db } from "~/lib/db";
 import { NextApiRequest, NextApiResponse } from "next";
+import { isString } from "util";
 
 const MESSAGES_BATCH = 20;
 

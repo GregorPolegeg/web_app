@@ -20,10 +20,8 @@ export const ChatInput = ({
       body: JSON.stringify({data ,senderId, conversationId, type}),
     });
     if(response.ok){
-      const {data} = await response.json();
-      socket.emit('sendMessage', {
-        data
-    })
+      const { data } = await response.json();
+      socket.emit(`newMessage`,{conversationId, message:data });
     }
 
     // After submitting, reset the form fields.
@@ -47,8 +45,8 @@ export const ChatInput = ({
           <div className="relative">
             <input
               {...field}
-              placeholder="Text"
-              className="without-ring w-full border-b border-gray-400 p-2 pl-8"
+              placeholder="Type your message"
+              className="without-ring w-full rounded-md shadow-sm border-gray-400 p-2 pl-8 focus:shadow-lg"
             />
           </div>
         )}

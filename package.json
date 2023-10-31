@@ -5,10 +5,10 @@
   "scripts": {
     "build": "next build",
     "db:push": "prisma db push",
-    "dev": "next dev",
+    "dev": "node server.js",
     "postinstall": "prisma generate",
     "lint": "next lint",
-    "start": "next start"
+    "start": "NODE_ENV=production node server.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.1",

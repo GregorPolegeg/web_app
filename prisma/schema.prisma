@@ -141,6 +141,8 @@ model Conversation {
     memberTwoId String
     memberTwo   Member @relation("MemberTwo", fields: [memberTwoId], references: [id], onDelete: Cascade)
 
+    deleted Boolean @default(false)
+    
     directMassage DirectMessage[]
 
     @@unique([memberOneId, memberTwoId])

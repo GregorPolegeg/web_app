@@ -28,6 +28,6 @@
     "**/*.tsx",
     "**/*.cjs",
     "**/*.mjs"
-  ],
+, "src/pages/api/socket/io.js", "src/pages/api/socket/io.js", "src/pages/api/socket/io.js"  ],
   "exclude": ["node_modules"]
 }
