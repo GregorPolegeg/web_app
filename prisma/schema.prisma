@@ -142,6 +142,8 @@ model Conversation {
     memberTwo   Member @relation("MemberTwo", fields: [memberTwoId], references: [id], onDelete: Cascade)
 
     deleted Boolean @default(false)
+
+    updatedAt DateTime @updatedAt
     
     directMassage DirectMessage[]
 

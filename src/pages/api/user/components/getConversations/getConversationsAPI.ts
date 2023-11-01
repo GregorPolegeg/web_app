@@ -23,8 +23,11 @@ export default async function handler(
           },
         ],
       },
-    });
-
+      orderBy: {
+        updatedAt: 'desc'
+      }
+    });    
+    
     if (!conversation) {
       return res.status(404).json({
         message: "Conversation not found",

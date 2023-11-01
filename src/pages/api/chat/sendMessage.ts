@@ -34,6 +34,7 @@ export default async function handler(
       },
     });
 
+
     return res.status(201).json({ message: "Message successfully created", data: createdMessage });
 
   } catch (error) {

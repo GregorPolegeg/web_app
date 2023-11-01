@@ -3,6 +3,7 @@ import { ChatInput } from "~/pages/api/chat/chat-input";
 import { useSession } from "next-auth/react";
 import { BsTrash } from "react-icons/bs";
 import { useSocket } from "~/pages/api/providers/socket-provider";
+import { AiOutlineArrowLeft } from "react-icons/ai";
 
 interface Data {
   id: string;
@@ -30,7 +31,9 @@ const DisplayConversationElement = () => {
   const { data: session } = useSession();
   const [messages, setMessages] = useState<MessageData[]>([]);
   //left menu
-  const [selectedConversation, setSelectedcConversation] = useState<string>("");
+  const [selectedConversation, setSelectedcConversation] = useState<
+    string | null
+  >(null);
   const [conversations, setConversations] = useState<Data[] | null>(null);
   //for new conversation
   const [selectedConversationName, setSelectedConversationName] =
@@ -48,14 +51,14 @@ const DisplayConversationElement = () => {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0]?.isIntersecting) {
-          if(!isContainerFull()){
-          loadOldMessages();
+          if (!isContainerFull()) {
+            loadOldMessages();
           }
         }
       },
       {
         threshold: 1.0,
-      }
+      },
     );
 
     if (topSentinelRef.current) {
@@ -89,7 +92,7 @@ const DisplayConversationElement = () => {
     }
   }, [cursor]);
 
-  async function handleDeleteMessage(messageId : string) {
+  async function handleDeleteMessage(messageId: string) {
     try {
       const response = await fetch("/api/chat/deleteMessage/route", {
         method: "POST",
@@ -97,22 +100,28 @@ const DisplayConversationElement = () => {
         body: JSON.stringify({
           userId: session?.user.id,
           conversationId: selectedConversation,
-          messageId: messageId,  // This is important to tell the API which message to delete
+          messageId: messageId, // This is important to tell the API which message to delete
         }),
       });
       if (response.ok) {
         const data = await response.json();
-        setMessages(prevMessages => prevMessages.filter(m => m.id !== messageId));
-        socket.emit("deleteMessage",{conversationId: selectedConversation ,messageId});
-      } else {   
+        setMessages((prevMessages) =>
+          prevMessages.filter((m) => m.id !== messageId),
+        );
+        socket.emit("deleteMessage", {
+          conversationId: selectedConversation,
+          messageId,
+        });
+      } else {
         console.error("Failed to delete the message.");
       }
     } catch (error) {
       console.error("An error occurred:", error);
     }
   }
-  
+
   async function getDirectMessages(conversationId: string) {
+    if (conversationId == selectedConversation) return;
     setCursor(null);
     try {
       const response = await fetch("/api/chat/directMessages/route", {
@@ -159,7 +168,6 @@ const DisplayConversationElement = () => {
     }
   }
 
-
   function isContainerFull() {
     if (messageContainerRef.current) {
       const { scrollHeight, clientHeight } = messageContainerRef.current;
@@ -182,7 +190,8 @@ const DisplayConversationElement = () => {
       });
       if (response.ok) {
         setUpdate(!update);
-        getDirectMessages("");
+        const data = await response.json();
+        setSelectedcConversation(data.id);
       } else {
         console.error("Failed to create conversation", response);
       }
@@ -206,20 +215,24 @@ const DisplayConversationElement = () => {
           setMessages((messages) => [newMessage, ...messages]);
         }
       };
-    
+
       const handleMessageDeleted = (deletedMessageId: string) => {
-        setMessages((messages) => messages.filter(message => message.id !== deletedMessageId));
+        setMessages((messages) =>
+          messages.filter((message) => message.id !== deletedMessageId),
+        );
+        if (!isContainerFull()) {
+          loadOldMessages();
+        }
       };
-    
+
       socket.on("newMessage", handleNewMessage);
       socket.on("messageDeleted", handleMessageDeleted);
-    
+
       return () => {
         socket.off("newMessage", handleNewMessage);
-        socket.off("messageDeleted", handleMessageDeleted);  
+        socket.off("messageDeleted", handleMessageDeleted);
       };
     }
-    
   }, [socket, selectedConversation]);
 
   useEffect(() => {
@@ -255,7 +268,11 @@ const DisplayConversationElement = () => {
       <div className="flex h-full w-full overflow-hidden">
         {" "}
         {/* overflow-hidden added here */}
-        <div className="h-full w-full md:w-[400px] md:min-w-[400px]">
+        <div
+          className={`${
+            selectedConversation == null ? "block" : "hidden"
+          } h-full w-full md:block md:w-[400px] md:min-w-[400px]`}
+        >
           {conversations === null ? (
             <div>Loading...</div>
           ) : conversations.length === 0 ? (
@@ -308,11 +325,22 @@ const DisplayConversationElement = () => {
             </div>
           )}
         </div>
-        <div className="flex h-full w-full flex-col bg-gray-100 p-5">
-          <div className="flex flex-grow flex-col-reverse overflow-y-auto">
+        <div
+          className={`${
+            selectedConversation != null ? "flex" : "hidden"
+          } h-full w-full flex-col  bg-gray-100 pb-5 md:flex`}
+        >
+          <div className="flex h-12 w-full items-center border-b border-zinc-200 bg-white p-5">
+            <div>
+              <button onClick={() => setSelectedcConversation(null)}>
+                <AiOutlineArrowLeft className="text-2xl" />
+              </button>
+            </div>
+          </div>
+          <div className="flex flex-grow flex-col-reverse overflow-y-auto px-5">
             {" "}
             {/* overflow-y-auto added here */}
-            {selectedConversation == "" ? (
+            {selectedConversation == null ? (
               <>
                 {selectedConversationName == "" ? (
                   <div className="flex">
@@ -406,7 +434,7 @@ const DisplayConversationElement = () => {
               </>
             ) : (
               <div
-                className="flex flex-grow flex-col-reverse overflow-y-auto"
+                className={`flex flex-grow flex-col-reverse overflow-y-auto`}
                 ref={messageContainerRef}
               >
                 {messages.map((message) => (
@@ -423,30 +451,44 @@ const DisplayConversationElement = () => {
                     )}
                     <p>{message.content}</p>
                     <div
-                      className={`text-lg absolute top-1/2 hidden -translate-y-1/2 transform p-3 text-black ${
+                      className={`absolute top-1/2 hidden -translate-y-1/2 transform p-3 text-lg text-black ${
                         message.memberId === session?.user.memberId
-                          ? "ll right-[100%] flex items-center justify-end pr-4 mr-[-2px]"
-                          : "rr left-[100%] flex items-center pl-4 ml-[-2px]"
+                          ? "ll right-[100%] mr-[-2px] flex items-center justify-end pr-4"
+                          : "rr left-[100%] ml-[-2px] flex items-center pl-4"
                       }`}
                     >
-                      <BsTrash 
-                      className={`hover:text-zinc-700 ${message.memberId === session?.user.memberId ? "ml-2" : "mr-2"}`} 
-                      onClick={() => handleDeleteMessage(message.id)}
-                      />                      
+                      <BsTrash
+                        className={`hover:text-zinc-700 ${
+                          message.memberId === session?.user.memberId
+                            ? "ml-2"
+                            : "mr-2"
+                        }`}
+                        onClick={() => handleDeleteMessage(message.id)}
+                      />
                       <small className="block text-xs text-gray-700">
                         {new Date(message.createdAt).toLocaleTimeString()}
                       </small>
                     </div>
                   </div>
                 ))}
+                {cursor && (
+                  <div className="mb-4 flex items-center justify-center">
+                    <button
+                      className="px-4 py-2 text-zinc-800"
+                      onClick={loadOldMessages}
+                    >
+                      Load More
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
 
-          <div className="h-[50px] flex-shrink-0 pt-2">
+          <div className="h-[50px] flex-shrink-0 px-5 pt-2">
             <ChatInput
               senderId={session?.user.memberId}
-              conversationId={selectedConversation}
+              conversationId={selectedConversation ? selectedConversation : ""}
               type="conversation"
             />
           </div>

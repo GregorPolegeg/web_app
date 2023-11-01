@@ -87,9 +87,14 @@ const UserNavigation = () => {
 
             {/* Login */}
             <div className="flex justify-center text-center mt-8 text-l font-normal">
-              <Link href="/login">Login</Link>
-              <p className="px-5">|</p>
-              <Link href="/register">Register</Link>
+            {!sessionData? (
+              <div>
+                <Link href="/login">Login</Link>
+                <p className="px-5">|</p>
+                <Link href="/register">Register</Link>
+              </div>
+              ) : (<button onClick={() => void signOut()}>LogOut</button>)}
+              
             </div>
           </div>
         )}
