@@ -36,6 +36,7 @@ export default async function handler(
         },
         where: {
           conversationId,
+          deleted: false  // Add this condition to filter out deleted messages
         },
         include: {
           member: {
@@ -53,6 +54,7 @@ export default async function handler(
         take: MESSAGES_BATCH,
         where: {
           conversationId,
+          deleted: false  // Add this condition to filter out deleted messages
         },
         include: {
           member: {
@@ -65,7 +67,7 @@ export default async function handler(
           createdAt: "desc",
         },
       });
-    }
+    }    
 
     let nextCursor = null;
 

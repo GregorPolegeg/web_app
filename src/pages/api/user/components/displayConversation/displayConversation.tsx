@@ -42,6 +42,33 @@ const DisplayConversationElement = () => {
   const messageContainerRef = useRef<HTMLDivElement>(null);
   const [cursor, setCursor] = useState(null);
 
+  const topSentinelRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          if(!isContainerFull()){
+          loadOldMessages();
+          }
+        }
+      },
+      {
+        threshold: 1.0, // 100% of the sentinel is visible
+      }
+    );
+
+    if (topSentinelRef.current) {
+      observer.observe(topSentinelRef.current);
+    }
+
+    return () => {
+      if (topSentinelRef.current) {
+        observer.unobserve(topSentinelRef.current);
+      }
+    };
+  }, [cursor]);
+
   useEffect(() => {
     const handleScroll = () => {
       if (messageContainerRef.current) {
@@ -52,7 +79,6 @@ const DisplayConversationElement = () => {
         }
       }
     };
-
     if (messageContainerRef.current) {
       const messageContainer = messageContainerRef.current;
       messageContainer.addEventListener("scroll", handleScroll);
@@ -62,6 +88,50 @@ const DisplayConversationElement = () => {
       };
     }
   }, [cursor]);
+
+  async function handleDeleteMessage(messageId : string) {
+    try {
+      const response = await fetch("/api/chat/deleteMessage/route", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: session?.user.id,
+          conversationId: selectedConversation,
+          messageId: messageId,  // This is important to tell the API which message to delete
+        }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setMessages(prevMessages => prevMessages.filter(m => m.id !== messageId));
+        socket.emit("deleteMessage",{conversationId: selectedConversation ,messageId});
+      } else {   
+        console.error("Failed to delete the message.");
+      }
+    } catch (error) {
+      console.error("An error occurred:", error);
+    }
+  }
+  
+  async function getDirectMessages(conversationId: string) {
+    setCursor(null);
+    try {
+      const response = await fetch("/api/chat/directMessages/route", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: session?.user.id,
+          conversationId: conversationId,
+        }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setMessages(data.items);
+        setCursor(data.nextCursor);
+      }
+    } catch (error) {
+      console.error("An error occurred while fetching direct messages:", error);
+    }
+  }
 
   async function loadOldMessages() {
     if (cursor) {
@@ -89,25 +159,13 @@ const DisplayConversationElement = () => {
     }
   }
 
-  async function getDirectMessages(conversationId: string) {
-    setCursor(null);
-    try {
-      const response = await fetch("/api/chat/directMessages/route", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: session?.user.id,
-          conversationId: conversationId,
-        }),
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setMessages(data.items);
-        setCursor(data.nextCursor);
-      }
-    } catch (error) {
-      console.error("An error occurred while fetching direct messages:", error);
+
+  function isContainerFull() {
+    if (messageContainerRef.current) {
+      const { scrollHeight, clientHeight } = messageContainerRef.current;
+      return scrollHeight > clientHeight;
     }
+    return false;
   }
 
   async function newConvo() {
@@ -140,7 +198,6 @@ const DisplayConversationElement = () => {
 
   useEffect(() => {
     if (socket) {
-      // Define the message handler
       const handleNewMessage = (
         conversationId: string,
         newMessage: MessageData,
@@ -149,15 +206,20 @@ const DisplayConversationElement = () => {
           setMessages((messages) => [newMessage, ...messages]);
         }
       };
-
-      // Attach the event listener
+    
+      const handleMessageDeleted = (deletedMessageId: string) => {
+        setMessages((messages) => messages.filter(message => message.id !== deletedMessageId));
+      };
+    
       socket.on("newMessage", handleNewMessage);
-
-      // Clean up: remove the event listener when the component is unmounted or when selectedConversation changes
+      socket.on("messageDeleted", handleMessageDeleted);
+    
       return () => {
         socket.off("newMessage", handleNewMessage);
+        socket.off("messageDeleted", handleMessageDeleted);  
       };
     }
+    
   }, [socket, selectedConversation]);
 
   useEffect(() => {
@@ -203,6 +265,7 @@ const DisplayConversationElement = () => {
               <h2 className="border-b border-gray-300  p-5 text-center text-xl font-bold">
                 Messages
               </h2>
+              <div ref={topSentinelRef} id="sentinel"></div>
               {conversations.map((conversation: Data) => (
                 <div
                   key={conversation.id}
@@ -347,25 +410,34 @@ const DisplayConversationElement = () => {
                 ref={messageContainerRef}
               >
                 {messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`text-normal relative my-[1px] max-w-lg rounded-2xl px-3 py-1 ${
+                      message.memberId === session?.user.memberId
+                        ? "ml-auto bg-blue-600 text-white"
+                        : "mr-auto bg-gray-400"
+                    }`}
+                  >
+                    {message.fileUrl && (
+                      <img src={message.fileUrl} alt="Sent file" />
+                    )}
+                    <p>{message.content}</p>
                     <div
-                      key={message.id}
-                      className={`text-normal my-2 max-w-lg rounded-xl px-2 py-1 font-semibold relative ${
+                      className={`text-lg absolute top-1/2 hidden -translate-y-1/2 transform p-3 text-black ${
                         message.memberId === session?.user.memberId
-                          ? "ml-auto bg-blue-600 text-white"
-                          : "mr-auto bg-gray-400"
+                          ? "ll right-[100%] flex items-center justify-end pr-4 mr-[-2px]"
+                          : "rr left-[100%] flex items-center pl-4 ml-[-2px]"
                       }`}
                     >
-                      {message.fileUrl && (
-                        <img src={message.fileUrl} alt="Sent file" />
-                      )}
-                      <p>{message.content}</p>
-                      <small className="block text-right text-xs">
+                      <BsTrash 
+                      className={`hover:text-zinc-700 ${message.memberId === session?.user.memberId ? "ml-2" : "mr-2"}`} 
+                      onClick={() => handleDeleteMessage(message.id)}
+                      />                      
+                      <small className="block text-xs text-gray-700">
                         {new Date(message.createdAt).toLocaleTimeString()}
                       </small>
-                      <div className={`hidden hover:text-red-600 text-normal absolute top-1/3 text-black ${message.memberId === session?.user.memberId ? "pr-2 right-[100%]" : "pl-2 left-[100%]"}`}>
-                        <BsTrash/>
-                      </div>
                     </div>
+                  </div>
                 ))}
               </div>
             )}
