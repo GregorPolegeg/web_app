@@ -54,7 +54,7 @@ const DisplayConversationElement = () => {
         }
       },
       {
-        threshold: 1.0, // 100% of the sentinel is visible
+        threshold: 1.0,
       }
     );
 
