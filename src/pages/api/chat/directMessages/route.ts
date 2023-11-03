@@ -36,7 +36,7 @@ export default async function handler(
         },
         where: {
           conversationId,
-          deleted: false  // Add this condition to filter out deleted messages
+          deleted: false 
         },
         include: {
           member: {

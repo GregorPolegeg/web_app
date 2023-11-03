@@ -6,6 +6,7 @@ import { AiOutlineEyeInvisible, AiOutlineEye } from "react-icons/ai";
 import { IoMdLock } from "react-icons/io";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const RegisterForm = () => {
   const {
@@ -14,6 +15,7 @@ const RegisterForm = () => {
     formState: { errors },
   } = useForm();
   
+  const router = useRouter();
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [passwordVisible2, setPasswordVisible2] = useState(false);
 
@@ -29,14 +31,12 @@ const RegisterForm = () => {
         body: JSON.stringify(data),
       });
       if (response.ok) {
-        // Navigate to login on successful registration
+        router.push("/login");
       } else {
         console.error("Registration failed", response);
-        // Handle error or show user feedback
       }
     } catch (error) {
       console.error("An error occurred:", error);
-      // Handle error or show user feedback
     }
   };
 

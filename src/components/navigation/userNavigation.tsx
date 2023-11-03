@@ -24,9 +24,9 @@ const UserNavigation = () => {
 
   return (
     <>
-      <nav className="px-7 md:py-0 py-2 z-10 fixed top-0 flex w-full items-center justify-between bg-white shadow-md md:flex-row flex-row">
+      <nav className="px-7 shadow-sm md:py-0 z-10 fixed top-0 flex w-full items-center justify-between bg-white md:flex-row flex-row">
         {/* Logo */}
-        <div className="flex">
+        <div className="flex p-1">
           <Image
             width={56}
             height={56}
@@ -38,7 +38,7 @@ const UserNavigation = () => {
         {/* Desktop Menu */}
         <ul className="hidden md:flex">
           {userNavItems.map((item, index) => (
-            <li key={index} className="transition duration-150 hover:bg-gray-300 hover:cursor-pointer text-l p-6 font-normal">
+            <li key={index} className="transition duration-150 hover:bg-gray-300 hover:cursor-pointer text-l p-5 font-normal">
               <Link href="/">{item}</Link>
             </li>
           ))}
@@ -55,7 +55,7 @@ const UserNavigation = () => {
 
         {/* Desktop Login */}
         <div className="hidden md:flex text-xl font-bold">
-          {!sessionData? (<Link href="/login">Login</Link>): (<button onClick={() => void signOut()}>{sessionData.user.name}</button>)}
+          {!sessionData? (<Link href="/login">Login</Link>): (<button onClick={() => void signOut() }>{sessionData.user.name}</button>)}
         </div>
 
         {/* Mobile Menu */}

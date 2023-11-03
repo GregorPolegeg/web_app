@@ -14,7 +14,7 @@ const index = () => {
   }
   return (
     <SocketProvider>
-      <div className="h-full pt-[72px]">
+      <div className="h-full pt-[65px]">
         {subscriptionPlan !== "NONE" ? (
           <div className="flex h-full">
             <DisplayConversationElement />

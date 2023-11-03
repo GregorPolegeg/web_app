@@ -34,6 +34,16 @@ export default async function handler(
       },
     });
 
+    await db.conversation.update({
+      where: {
+        id: conversationId
+      },
+      data: {
+        updatedAt: new Date()
+      }
+    });
+    
+
 
     return res.status(201).json({ message: "Message successfully created", data: createdMessage });
 

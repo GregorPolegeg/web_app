@@ -3,16 +3,15 @@ import { ChatInput } from "~/pages/api/chat/chat-input";
 import { useSession } from "next-auth/react";
 import { BsTrash } from "react-icons/bs";
 import { useSocket } from "~/pages/api/providers/socket-provider";
-import { AiOutlineArrowLeft } from "react-icons/ai";
+import { AiOutlineArrowLeft, AiOutlinePlus } from "react-icons/ai";
 
 interface Data {
   id: string;
   name: string;
   content: string;
+  lastMessageUsername: string | null;
+  lastMessage: string | null;
   fileUrl: string | null;
-  memberId: string;
-  conversationId: string;
-  createdAt: Date;
   updatedAt: Date;
   deleted: boolean;
 }
@@ -31,9 +30,9 @@ const DisplayConversationElement = () => {
   const { data: session } = useSession();
   const [messages, setMessages] = useState<MessageData[]>([]);
   //left menu
-  const [selectedConversation, setSelectedcConversation] = useState<
+  const [selectedConversation, setSelectedConversation] = useState<
     string | null
-  >(null);
+  >("");
   const [conversations, setConversations] = useState<Data[] | null>(null);
   //for new conversation
   const [selectedConversationName, setSelectedConversationName] =
@@ -100,7 +99,7 @@ const DisplayConversationElement = () => {
         body: JSON.stringify({
           userId: session?.user.id,
           conversationId: selectedConversation,
-          messageId: messageId, // This is important to tell the API which message to delete
+          messageId: messageId,
         }),
       });
       if (response.ok) {
@@ -119,7 +118,31 @@ const DisplayConversationElement = () => {
       console.error("An error occurred:", error);
     }
   }
-
+  function timePassed(messageSentTime : Date): string{
+    const currentTime = new Date();
+    const timeDifference = currentTime.getTime() - messageSentTime.getTime();
+    
+    // Convert milliseconds to minutes
+    const minutesPast = Math.floor(timeDifference / 60000);
+    
+    // Convert minutes to hours and days
+    const hoursPast = Math.floor(minutesPast / 60);
+    const daysPast = Math.floor(hoursPast / 24);
+    
+    let timePastString = '';
+    
+    if (minutesPast < 60) {
+      // If less than 60 minutes have passed
+      timePastString = `${minutesPast} minute(s) ago`;
+    } else if (hoursPast < 24) {
+      // If less than 24 hours, but more than 60 minutes have passed
+      timePastString = `${hoursPast} hour(s) ago`;
+    } else {
+      // If 24 hours or more have passed
+      timePastString = `${daysPast} day(s) ago`;
+    }
+    return timePastString;
+  }
   async function getDirectMessages(conversationId: string) {
     if (conversationId == selectedConversation) return;
     setCursor(null);
@@ -191,7 +214,10 @@ const DisplayConversationElement = () => {
       if (response.ok) {
         setUpdate(!update);
         const data = await response.json();
-        setSelectedcConversation(data.id);
+        setSelectedAge("");
+        setSelectedConversationName("");
+        setSelectedGender("");
+        setSelectedConversation(data.id);
       } else {
         console.error("Failed to create conversation", response);
       }
@@ -271,23 +297,37 @@ const DisplayConversationElement = () => {
         <div
           className={`${
             selectedConversation == null ? "block" : "hidden"
-          } h-full w-full md:block md:w-[400px] md:min-w-[400px]`}
+          } h-full w-full border-r border-gray-300 md:block md:w-[400px] md:min-w-[400px]`}
         >
           {conversations === null ? (
             <div>Loading...</div>
           ) : conversations.length === 0 ? (
-            <div>No conversations</div>
+            <div className="flex flex-col border-b border-gray-300">
+              <h2 className="p-3 text-xl font-bold">No Coversations</h2>
+              <button
+                className="p-5 text-2xl"
+                onClick={() => setSelectedConversation("")}
+              >
+                <AiOutlinePlus />
+              </button>
+            </div>
           ) : (
             <div>
-              <h2 className="border-b border-gray-300  p-5 text-center text-xl font-bold">
-                Messages
-              </h2>
+              <div className="flex flex-col border-b border-gray-300">
+                <h2 className="p-3 text-xl font-bold">Messages</h2>
+                <button
+                  className="p-5 text-2xl"
+                  onClick={() => setSelectedConversation("")}
+                >
+                  <AiOutlinePlus />
+                </button>
+              </div>
               <div ref={topSentinelRef} id="sentinel"></div>
               {conversations.map((conversation: Data) => (
                 <div
                   key={conversation.id}
                   onClick={() => {
-                    setSelectedcConversation(conversation.id);
+                    setSelectedConversation(conversation.id);
                     getDirectMessages(conversation.id);
                     joinConversation(conversation.id);
                   }}
@@ -296,7 +336,7 @@ const DisplayConversationElement = () => {
                   tabIndex={0}
                   onKeyDown={(event) => {
                     if (event.key === "Enter" || event.key === " ") {
-                      setSelectedcConversation(conversation.id);
+                      setSelectedConversation(conversation.id);
                     }
                   }}
                 >
@@ -307,7 +347,19 @@ const DisplayConversationElement = () => {
                         {conversation.content}
                       </p>
                       <p className="p text-xs text-gray-500">
-                        kdo: Last message - 13h
+                        {conversation.lastMessage ? (
+                          <span>
+                            {conversation.lastMessageUsername}:{" "}
+                            {conversation.lastMessage.length > 20
+                              ? conversation.lastMessage.substring(0, 20) +
+                                "..."
+                              : conversation.lastMessage}{" "}
+                            -{" "}
+                            {timePassed(new Date(conversation.updatedAt))}
+                          </span>
+                        ) : (
+                          <span>No conversations</span>
+                        )}
                       </p>
                     </div>
                   </div>
@@ -330,9 +382,9 @@ const DisplayConversationElement = () => {
             selectedConversation != null ? "flex" : "hidden"
           } h-full w-full flex-col  bg-gray-100 pb-5 md:flex`}
         >
-          <div className="flex h-12 w-full items-center border-b border-zinc-200 bg-white p-5">
+          <div className="flex h-[53px] w-full items-center border-b border-zinc-200 bg-white p-5 shadow-sm">
             <div>
-              <button onClick={() => setSelectedcConversation(null)}>
+              <button onClick={() => setSelectedConversation(null)}>
                 <AiOutlineArrowLeft className="text-2xl" />
               </button>
             </div>
@@ -340,7 +392,7 @@ const DisplayConversationElement = () => {
           <div className="flex flex-grow flex-col-reverse overflow-y-auto px-5">
             {" "}
             {/* overflow-y-auto added here */}
-            {selectedConversation == null ? (
+            {selectedConversation == "" ? (
               <>
                 {selectedConversationName == "" ? (
                   <div className="flex">
@@ -449,7 +501,9 @@ const DisplayConversationElement = () => {
                     {message.fileUrl && (
                       <img src={message.fileUrl} alt="Sent file" />
                     )}
-                    <p>{message.content}</p>
+                    <p style={{ overflowWrap: "break-word" }}>
+                      {message.content}
+                    </p>
                     <div
                       className={`absolute top-1/2 hidden -translate-y-1/2 transform p-3 text-lg text-black ${
                         message.memberId === session?.user.memberId

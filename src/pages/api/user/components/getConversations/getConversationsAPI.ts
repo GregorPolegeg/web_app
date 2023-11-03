@@ -12,7 +12,7 @@ export default async function handler(
         message: "No memberId",
       });
     }
-    const conversation = await db.conversation.findMany({
+    const conversations = await db.conversation.findMany({
       where: {
         OR: [
           {
@@ -25,16 +25,54 @@ export default async function handler(
       },
       orderBy: {
         updatedAt: 'desc'
+      },
+      include: {
+        directMessage: {
+          where:{
+            deleted: false
+          },
+          take: 1,
+          orderBy: {
+            updatedAt: 'desc'
+          },
+          include: {
+            member: {
+              select: {
+                user: {
+                  select: {
+                    name: true
+                  }
+                }
+              }
+            }
+          }
+        }
       }
-    });    
+    });
     
-    if (!conversation) {
+
+    if (!conversations) {
       return res.status(404).json({
         message: "Conversation not found",
       });
     }
+    const transformedConversations = conversations.map(convo => {
+      const directMessage = convo.directMessage[0];
+      return {
+        id: convo.id,
+        name: convo.name, 
+        content: '',
+        lastMessageUsername: directMessage?.member?.user?.name || null,
+        lastMessage: directMessage?.content || null,
+        fileUrl: directMessage?.fileUrl || null,
+        updatedAt: convo.updatedAt,
+        deleted: false,
+      };
+    });
 
-    return res.json(conversation);
+    
+
+    return res.json(transformedConversations);
   }
 
   // Handle other HTTP methods or send an error response for unsupported methods

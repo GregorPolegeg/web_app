@@ -145,7 +145,7 @@ model Conversation {
 
     updatedAt DateTime @updatedAt
     
-    directMassage DirectMessage[]
+    directMessage DirectMessage[]
 
     @@unique([memberOneId, memberTwoId])
     @@index([memberTwoId])

@@ -90,6 +90,7 @@ export const ChatInput = ({
               <input
                 {...field}
                 ref={inputRef}
+                autoComplete="off"
                 placeholder="Type your message"
                 className="without-ring w-full rounded-md border-gray-400 p-2 pl-10 shadow-sm focus:shadow-lg"
               />

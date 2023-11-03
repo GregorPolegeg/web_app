@@ -11,6 +11,7 @@ import { env } from "~/env.mjs";
 import { db } from "~/server/db";
 import { compare } from "bcrypt";
 import { getMemberId } from "~/pages/api/user/getMemberId/getMemberId";
+import { UserType } from "@prisma/client";
 
 
 
@@ -82,6 +83,10 @@ export const authOptions: NextAuthOptions = {
         if (!existingUser) {
           throw new Error("User not found");
         }
+        if(existingUser.platformType != UserType.NORMAL){
+          throw new Error("Sign with gmail");          
+        }
+        
         if (!existingUser.password) {
           throw new Error("Sign with gmail");
         }
