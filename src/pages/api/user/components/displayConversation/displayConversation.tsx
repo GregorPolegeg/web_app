@@ -4,6 +4,8 @@ import { useSession } from "next-auth/react";
 import { BsTrash } from "react-icons/bs";
 import { useSocket } from "~/pages/api/providers/socket-provider";
 import { AiOutlineArrowLeft, AiOutlinePlus } from "react-icons/ai";
+import { Router } from "next/router";
+import { useRouter } from "next/navigation";
 
 interface Data {
   id: string;
@@ -122,27 +124,26 @@ const DisplayConversationElement = () => {
     const currentTime = new Date();
     const timeDifference = currentTime.getTime() - messageSentTime.getTime();
     
-    // Convert milliseconds to minutes
     const minutesPast = Math.floor(timeDifference / 60000);
     
-    // Convert minutes to hours and days
     const hoursPast = Math.floor(minutesPast / 60);
     const daysPast = Math.floor(hoursPast / 24);
     
     let timePastString = '';
     
     if (minutesPast < 60) {
-      // If less than 60 minutes have passed
+
       timePastString = `${minutesPast} minute(s) ago`;
     } else if (hoursPast < 24) {
-      // If less than 24 hours, but more than 60 minutes have passed
+
       timePastString = `${hoursPast} hour(s) ago`;
     } else {
-      // If 24 hours or more have passed
+
       timePastString = `${daysPast} day(s) ago`;
     }
     return timePastString;
   }
+
   async function getDirectMessages(conversationId: string) {
     if (conversationId == selectedConversation) return;
     setCursor(null);
@@ -199,6 +200,29 @@ const DisplayConversationElement = () => {
     return false;
   }
 
+  const router = useRouter();
+  
+  function setupBackButtonListener() {
+
+    const handleBackButton = (event: PopStateEvent) => {
+      if (selectedConversation) {
+        console.log("niger");
+        setSelectedConversation(null);
+        router.push("/");
+      } else {
+      }
+    };
+  
+    window.addEventListener('popstate', handleBackButton);
+    return () => window.removeEventListener('popstate', handleBackButton);
+  }
+
+  useEffect(() => {
+    const cleanup = setupBackButtonListener();
+
+    return cleanup;
+  }), []
+
   async function newConvo() {
     try {
       const response = await fetch("/api/user/getOrCreateConversation/route", {
@@ -225,6 +249,7 @@ const DisplayConversationElement = () => {
       console.error("An error occurred:", error);
     }
   }
+
   function joinConversation(conversation: string) {
     if (socket) {
       socket.emit("joinConversation", conversation);
@@ -261,8 +286,9 @@ const DisplayConversationElement = () => {
     }
   }, [socket, selectedConversation]);
 
+
   useEffect(() => {
-    //get all user conversations
+
     if (session?.user.id) {
       const fetchDetails = async () => {
         try {
@@ -305,7 +331,7 @@ const DisplayConversationElement = () => {
             <div className="flex flex-col border-b border-gray-300">
               <h2 className="p-3 text-xl font-bold">No Coversations</h2>
               <button
-                className="p-5 text-2xl"
+                className="px-5 py-2 text-2xl"
                 onClick={() => setSelectedConversation("")}
               >
                 <AiOutlinePlus />
@@ -316,7 +342,7 @@ const DisplayConversationElement = () => {
               <div className="flex flex-col border-b border-gray-300">
                 <h2 className="p-3 text-xl font-bold">Messages</h2>
                 <button
-                  className="p-5 text-2xl"
+                  className="px-5 py-2 text-2xl"
                   onClick={() => setSelectedConversation("")}
                 >
                   <AiOutlinePlus />
