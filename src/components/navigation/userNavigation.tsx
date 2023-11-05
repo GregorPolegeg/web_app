@@ -5,10 +5,8 @@ import { AiOutlineClose } from 'react-icons/ai'
 import { signIn, signOut, useSession } from "next-auth/react";
 
 const navContent = {
-  Admin: ["Home", "test"],
-  User: ["Home", "About", "Reviews", "Plans", "Contacts"],
-  LogedUser: ["Messages", "Form", "Suppor Groups", "Contacts"],
-  Provider: ["Home", "test"],
+  User: [{name:"Home",route:"/"}, {name:"About",route:"/"}, {name:"Reviews",route:"/"}, {name:"Plans",route:"/"}, {name:"Contacts",route:"/"}],
+  LogedUser: [{name:"Messages",route:"/messages/t"},{name:"Form",route:"/messages/t"},{name:"Support",route:"/messages/t"}, {name:"Contacts",route:"/messages/t"}],
 };
 
 
@@ -39,7 +37,7 @@ const UserNavigation = () => {
         <ul className="hidden md:flex">
           {userNavItems.map((item, index) => (
             <li key={index} className="transition duration-150 hover:bg-gray-300 hover:cursor-pointer text-l p-5 font-normal">
-              <Link href="/">{item}</Link>
+              <Link href={item.route}>{item.name}</Link>
             </li>
           ))}
         </ul>
@@ -80,7 +78,7 @@ const UserNavigation = () => {
             <ul className="mt-8 flex flex-col items-center">
               {userNavItems.map((item, index) => (
                 <li key={index} className="transition text-center w-full duration-150 hover:bg-gray-300 hover:cursor-pointer text-l py-2 font-bold">
-                  <Link href="/">{item}</Link>
+                  <Link href={item.route}>{item.name}</Link>
                 </li>
               ))}
             </ul>

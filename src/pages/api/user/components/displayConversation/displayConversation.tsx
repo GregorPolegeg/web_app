@@ -4,7 +4,6 @@ import { useSession } from "next-auth/react";
 import { BsTrash } from "react-icons/bs";
 import { useSocket } from "~/pages/api/providers/socket-provider";
 import { AiOutlineArrowLeft, AiOutlinePlus } from "react-icons/ai";
-import { Router } from "next/router";
 import { useRouter } from "next/navigation";
 
 interface Data {
@@ -206,9 +205,9 @@ const DisplayConversationElement = () => {
 
     const handleBackButton = (event: PopStateEvent) => {
       if (selectedConversation) {
-        console.log("niger");
+        console.log("niggewr");
+        router.back();
         setSelectedConversation(null);
-        router.push("/");
       } else {
       }
     };

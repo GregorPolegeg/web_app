@@ -17,7 +17,7 @@ const index = () => {
       <div className="h-full pt-[65px]">
         {subscriptionPlan !== "NONE" ? (
           <div className="flex h-full">
-            <DisplayConversationElement />
+            Hello this is home click messages
           </div>
         ) : (
           <Subscriptions />
