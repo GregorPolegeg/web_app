@@ -28,7 +28,7 @@ const UserNavigation = () => {
           <Image
             width={56}
             height={56}
-            src="https://cdn.worldvectorlogo.com/logos/sc-spelle-venhaus.svg"
+            src="/images/logo.png"
             alt="Logo"
           />
         </div>

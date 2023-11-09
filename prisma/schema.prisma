@@ -144,6 +144,9 @@ model Conversation {
     deleted Boolean @default(false)
 
     updatedAt DateTime @updatedAt
+
+    seenByMemberOne Boolean @default(false)
+    seenByMemberTwo Boolean @default(false)
     
     directMessage DirectMessage[]
 

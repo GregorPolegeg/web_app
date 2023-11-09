@@ -1,9 +1,8 @@
-// server.js
 const { createServer } = require("http");
 const { parse } = require("url");
+const callSendMessage = require("./src/server/callUpdateSeen");
 const next = require("next");
 const { Server } = require("socket.io");
-
 const dev = process.env.NODE_ENV !== "production";
 const app = next({ dev });
 const handle = app.getRequestHandler();
@@ -23,13 +22,34 @@ app.prepare().then(() => {
 
   io.on("connection", (socket) => {
     socket.on("joinConversation", (newConversationId) => {
-      const currentRooms = socket.rooms;
-      currentRooms.forEach((room) => {
-        if (room !== socket.id) {
-          socket.leave(room);
-        }
-      });
-      socket.join(`${newConversationId}`);
+      if (!socket.rooms.has(newConversationId)) {
+        socket.join(newConversationId);
+      }
+    });
+
+    socket.on("responseIsActive", (payload) => {
+      io.to(`${payload.conversationId}`).emit(
+        "responseIsActive",
+        payload.active,
+        payload.senderId,
+      );
+    });
+
+    socket.on("isActive", (payload) => {
+      if (2 <= io.sockets.adapter.rooms.get(payload.conversationId).size) {
+        io.to(`${payload.conversationId}`).emit(
+          "isActive",
+          payload.conversationId,
+          payload.senderId,
+        );
+      } else {
+        const senderId = payload.senderId
+        io.to(`${payload.conversationId}`).emit(
+          "responseIsActive",
+          false,
+          senderId,
+        );
+      }
     });
 
     socket.on("newMessage", (payload) => {
@@ -39,6 +59,7 @@ app.prepare().then(() => {
         payload.message,
       );
     });
+
     socket.on("deleteMessage", (payload) => {
       io.to(`${payload.conversationId}`).emit(
         "messageDeleted",

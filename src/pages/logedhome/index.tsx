@@ -1,7 +1,6 @@
 import { useSession } from "next-auth/react";
 import React from "react";
 import Subscriptions from "../api/user/components/getSubscriptions";
-import DisplayConversationElement from "../api/user/components/displayConversation/displayConversation";
 import { SocketProvider, useSocket } from "../api/providers/socket-provider";
 const index = () => {
   const { data: session } = useSession();
@@ -17,7 +16,10 @@ const index = () => {
       <div className="h-full pt-[65px]">
         {subscriptionPlan !== "NONE" ? (
           <div className="flex h-full">
-            Hello this is home click messages
+            <div className="h-[100px] w-[100px] bg-teal-100"></div>
+            <div className="h-[100px] w-[100px] bg-red-950"></div>
+            <div className="h-[100px] w-[100px] bg-cyan-800"></div>
+            <div className="h-[100px] w-[100px] bg-red-200"></div>
           </div>
         ) : (
           <Subscriptions />
