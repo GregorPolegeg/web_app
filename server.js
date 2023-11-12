@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-// @ts-nocheck
-=======
->>>>>>> 7fa9c5140dd2143fc4386144af32cbbdef13d6f1
 const { createServer } = require("http");
 const { parse } = require("url");
 const callSendMessage = require("./src/server/callUpdateSeen");
@@ -30,7 +26,6 @@ app.prepare().then(() => {
   }
 
   io.on("connection", (socket) => {
-<<<<<<< HEAD
     //seen
     socket.on("activeOnConversation", ({ conversationId, memberId }) => {
       if (!activeMembers[conversationId]) {
@@ -51,43 +46,15 @@ app.prepare().then(() => {
       }
     });
 
-=======
->>>>>>> 7fa9c5140dd2143fc4386144af32cbbdef13d6f1
     socket.on("joinConversation", (newConversationId) => {
       if (!socket.rooms.has(newConversationId)) {
         socket.join(newConversationId);
       }
     });
 
-<<<<<<< HEAD
     socket.on("isActive", (payload) => {
       const active = isMemberActive(payload.conversationId, payload.otherMemberId);
       socket.emit("responseIsActive", active);
-=======
-    socket.on("responseIsActive", (payload) => {
-      io.to(`${payload.conversationId}`).emit(
-        "responseIsActive",
-        payload.active,
-        payload.senderId,
-      );
-    });
-
-    socket.on("isActive", (payload) => {
-      if (2 <= io.sockets.adapter.rooms.get(payload.conversationId).size) {
-        io.to(`${payload.conversationId}`).emit(
-          "isActive",
-          payload.conversationId,
-          payload.senderId,
-        );
-      } else {
-        const senderId = payload.senderId
-        io.to(`${payload.conversationId}`).emit(
-          "responseIsActive",
-          false,
-          senderId,
-        );
-      }
->>>>>>> 7fa9c5140dd2143fc4386144af32cbbdef13d6f1
     });
 
     socket.on("newMessage", (payload) => {
