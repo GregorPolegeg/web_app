@@ -166,6 +166,15 @@ export const ChatInput = ({
       )}
 
       <div className="flex items-center">
+      {imagePreview && (
+        <div style={{ width: "50px", height: "50px" }}>
+          <img
+            src={imagePreview}
+            alt="Preview"
+            style={{ width: "100%", height: "100%" }}
+          />
+        </div>
+      )}
         <Controller
           name="message"
           control={control}
