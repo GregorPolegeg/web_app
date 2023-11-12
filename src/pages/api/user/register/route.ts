@@ -32,7 +32,7 @@ export default async function handler(
       if (existingByEmail) {
         return res.status(409).json({
           user: null,
-          message: "User with this email already exists",
+          message: "Email already used",
         });
       }
 
@@ -43,7 +43,7 @@ export default async function handler(
       if (existingByUserName) {
         return res.status(409).json({
           user: null,
-          message: "User with this username already exists",
+          message: "Username taken",
         });
       }
       //Create user

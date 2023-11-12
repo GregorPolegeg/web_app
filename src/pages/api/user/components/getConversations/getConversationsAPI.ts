@@ -56,17 +56,28 @@ export default async function handler(
         message: "Conversation not found",
       });
     }
+
+
     const transformedConversations = conversations.map(convo => {
       const directMessage = convo.directMessage[0];
+      let seen = false;
+      if (convo.memberOneId === memberId) {
+        seen = convo.seenByMemberOne;
+      } else if (convo.memberTwoId === memberId) {
+        seen = convo.seenByMemberTwo;
+      }
+
+
       return {
         id: convo.id,
         name: convo.name, 
         content: '',
         lastMessageUsername: directMessage?.member?.user?.name || null,
-        lastMessage: directMessage?.content || null,
+        lastMessage: directMessage?.content ?  (directMessage?.content) : (directMessage?.fileUrl ? "image" : null),
         fileUrl: directMessage?.fileUrl || null,
         updatedAt: convo.updatedAt,
         deleted: false,
+        seen,
       };
     });
 
@@ -75,6 +86,5 @@ export default async function handler(
     return res.json(transformedConversations);
   }
 
-  // Handle other HTTP methods or send an error response for unsupported methods
   return res.status(405).json({ message: "Method not allowed" });
 }

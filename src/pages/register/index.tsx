@@ -2,7 +2,6 @@ import RegisterFrom from "src/components/forms/register/registerForm";
 import UserNavigation from "src/components/navigation/userNavigation";
 import { Poppins } from "next/font/google";
 
-import { api } from "~/utils/api";
 
 const poppins = Poppins({
   subsets: ["latin"],

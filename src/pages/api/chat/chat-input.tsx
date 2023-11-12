@@ -2,53 +2,126 @@ import { Controller, useForm } from "react-hook-form";
 import { useSocket } from "../providers/socket-provider";
 import { VscSend } from "react-icons/vsc";
 import { CiCirclePlus } from "react-icons/ci";
-import { useRef, useState } from "react";
-import e from "cors";
+import { useEffect, useRef, useState } from "react";
+import { useSession } from "next-auth/react";
+import Circle from "./loadingCircle/circle";
 interface ChatInputProps {
   senderId: string;
   conversationId: string;
   type: "conversation" | "channel";
+  otherMemberId: string;
 }
 
 export const ChatInput = ({
   senderId,
   conversationId,
   type,
+  otherMemberId,
 }: ChatInputProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const imageRef = useRef<File | null>(null);
+  const [imageLoading, setImageLoading] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setSelectedImage(e.target.files[0]);
+      const file = e.target.files[0];
+      if (file.size > 25 * 1024 * 1024) {
+        alert("File size should not exceed 25MB.");
+        return;
+      }
+      imageRef.current = file;
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+        setImageLoading(false);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
   const { socket } = useSocket();
-  const onSubmit = async (data: Object) => {
-    const response = await fetch("/api/chat/sendMessage", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        data,
-        senderId,
-        conversationId,
-        type,
-        image: selectedImage,
-      }),
-    });
-    if (response.ok) {
-      const { data } = await response.json();
-      socket.emit(`newMessage`, { conversationId, message: data });
-    }
-    reset();
+  const { data: session } = useSession();
+
+  const formDataRef = useRef<Object | null>(null);
+
+  const onSubmit = (data: Object) => {
+    formDataRef.current = data;
+    socket.emit(`isActive`, { conversationId, otherMemberId });
   };
+
+  useEffect(() => {
+    if (socket) {
+      const sendMessage = async (active: boolean) => {
+        console.log(otherMemberId,session?.user.memberId);
+        reset();
+        return new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          if (conversationId !== "" && conversationId !== null) {
+            const formData = new FormData();
+            if (imageRef.current) {
+              formData.append("image", imageRef.current, imageRef.current.name);
+            }
+            formData.append("senderId", senderId);
+            formData.append("conversationId", conversationId);
+            formData.append("type", type);
+            formData.append("message", JSON.stringify(formDataRef.current));
+            formData.append("active", active.toString());
+
+            xhr.open("POST", "/api/chat/sendMessage");
+
+            xhr.upload.onprogress = (event) => {
+              if (event.lengthComputable) {
+                const progress = (event.loaded / event.total) * 100;
+                setUploadProgress(progress);
+              }
+            };
+
+            xhr.onload = () => {
+              if (xhr.status === 200 || xhr.status === 201) {
+                try {
+                  const response = JSON.parse(xhr.responseText);
+
+                  imageRef.current = null;
+                  setImagePreview(null);
+
+                  setUploadProgress(0);
+                  socket.emit(`newMessage`, {
+                    conversationId,
+                    message: response.data,
+                    senderId,
+                  });
+
+                  resolve(response);
+                } catch (error) {
+                  console.error("Error parsing response:", error);
+                  reject(error);
+                }
+              } else {
+                console.error("Upload failed:", xhr.statusText);
+                reject(new Error("Upload failed: " + xhr.statusText));
+              }
+            };
+            xhr.send(formData);
+          }
+        });
+      };
+
+      socket.on("responseIsActive", sendMessage);
+
+      return () => {
+        socket.off("responseIsActive", sendMessage);
+      };
+    }
+  }, [socket, conversationId, imageRef]);
 
   const {
     control,
     handleSubmit,
     formState: { errors },
-    reset, // Destructure the reset function
+    reset,
   } = useForm();
 
   return (
@@ -61,10 +134,36 @@ export const ChatInput = ({
       <input
         type="file"
         id="imageUpload"
-        accept="image/*"
+        accept="image/*,video/*"
         style={{ display: "none" }}
         onChange={handleImageChange}
       />
+      {imagePreview && (
+        <div style={{ position: "relative", width: "50px", height: "50px" }}>
+          <img
+            src={imagePreview}
+            alt="Preview"
+            style={{ width: "100%", height: "100%" }}
+          />
+          {uploadProgress > 0 && uploadProgress < 100 && (
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: "rgba(0, 0, 0, 0.5)",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Circle />
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="flex items-center">
         <Controller
@@ -73,26 +172,35 @@ export const ChatInput = ({
           defaultValue=""
           rules={{
             validate: (value) =>
-              (value && value.length > 0) || selectedImage
+              (value && value.length > 0) || imageRef.current
                 ? true
                 : "Please provide a message or an image",
             maxLength: {
               value: 250,
-              message: "Message can not exceed 250 characters",
+              message: "Message cannot exceed 250 characters",
             },
           }}
           render={({ field }) => (
-            <div className="relative flex-grow">
-              <CiCirclePlus
-                onClick={() => document.getElementById("imageUpload")?.click()}
-                className="absolute left-2 top-1/2 -translate-y-1/2 transform text-2xl hover:cursor-pointer hover:text-zinc-700"
-              />
+            <div className="flex flex-grow gap-2 rounded-md border-gray-400 bg-white p-2 shadow-sm focus:shadow-lg">
+              <div>
+                <CiCirclePlus
+                  onClick={() =>
+                    document.getElementById("imageUpload")?.click()
+                  }
+                  className="text-2xl hover:cursor-pointer hover:text-zinc-700"
+                />
+              </div>
               <input
                 {...field}
                 ref={inputRef}
                 autoComplete="off"
                 placeholder="Type your message"
-                className="without-ring w-full rounded-md border-gray-400 p-2 pl-10 shadow-sm focus:shadow-lg"
+                className="without-ring w-full"
+                disabled={
+                  conversationId === "" ||
+                  conversationId === null ||
+                  (uploadProgress > 0 && uploadProgress < 100)
+                }
               />
             </div>
           )}
@@ -102,7 +210,7 @@ export const ChatInput = ({
             handleSubmit(onSubmit)();
             inputRef.current?.focus();
           }}
-          className="ml-2 text-xl"
+          className="hover: ml-2 cursor-pointer text-xl"
         />
       </div>
     </form>

@@ -8,12 +8,17 @@
     box-shadow: none;
 }
 
-.text-normal:hover .hidden.ll {
+.text-base:hover .hidden.ll {
     display: flex;
     flex-direction: row-reverse;
   }
 
- .text-normal:hover .hidden.rr {
+ .text-base:hover .hidden.rr {
     display: flex;
+  }
+  
+  .message-content {
+    overflow-wrap: break-word;
+    word-break: break-all;
   }
   

@@ -55,11 +55,11 @@ model Session {
 
 model User {
     id               String       @id @default(cuid())
-    name             String?      @unique
-    email            String?      @unique
-    password         String?
+    name             String       @unique
+    email            String       @unique
+    password         String
     emailVerified    DateTime?
-    image            String?
+    profileImage     String?
     type             UserPosition @default(NORMAL)
     platformType     UserType     @default(GOOGLE)
     subscriptionPlan String?      @default("NONE")
@@ -132,19 +132,22 @@ model Messsage {
 }
 
 model Conversation {
-    id          String @id @default(uuid())
+    id          String  @id @default(uuid())
     name        String
     memberOneId String
-    memberOne   Member @relation("MemberOne", fields: [memberOneId], references: [id], onDelete: Cascade)
+    memberOne   Member  @relation("MemberOne", fields: [memberOneId], references: [id], onDelete: Cascade)
     gender      String?
     age         String?
     memberTwoId String
-    memberTwo   Member @relation("MemberTwo", fields: [memberTwoId], references: [id], onDelete: Cascade)
+    memberTwo   Member  @relation("MemberTwo", fields: [memberTwoId], references: [id], onDelete: Cascade)
 
     deleted Boolean @default(false)
 
-    updatedAt DateTime @updatedAt
-    
+    updatedAt DateTime
+
+    seenByMemberOne Boolean @default(false)
+    seenByMemberTwo Boolean @default(false)
+
     directMessage DirectMessage[]
 
     @@unique([memberOneId, memberTwoId])

@@ -102,6 +102,7 @@ const createNewConversation = async (
         name,
         age,
         gender,
+        updatedAt: new Date(),
       },
       include: {
         memberOne: {

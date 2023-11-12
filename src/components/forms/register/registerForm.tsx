@@ -31,7 +31,7 @@ const RegisterForm = () => {
         body: JSON.stringify(data),
       });
       if (response.ok) {
-        router.push("/login");
+        router.push("../login");
       } else {
         console.error("Registration failed", response);
       }

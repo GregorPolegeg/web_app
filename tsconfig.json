@@ -28,6 +28,6 @@
     "**/*.tsx",
     "**/*.cjs",
     "**/*.mjs"
-, "src/pages/api/socket/io.js", "src/pages/api/socket/io.js", "src/pages/api/socket/io.js"  ],
+, "src/pages/api/socket/io.js", "src/pages/api/socket/io.js", "src/pages/api/socket/io.js", "src/server/updateSeenConversation/route.js", "server.js", "src/lib/updateSeenConversation/route.ks", "server.js", "src/server/db.js"  ],
   "exclude": ["node_modules"]
 }

@@ -1,12 +1,12 @@
-// server.js
+// @ts-nocheck
 const { createServer } = require("http");
 const { parse } = require("url");
 const next = require("next");
 const { Server } = require("socket.io");
-
 const dev = process.env.NODE_ENV !== "production";
 const app = next({ dev });
 const handle = app.getRequestHandler();
+const activeMembers = {};
 
 app.prepare().then(() => {
   const server = createServer((req, res) => {
@@ -21,15 +21,40 @@ app.prepare().then(() => {
     },
   });
 
+  function isMemberActive(conversationId, otherMemberId) {
+    return activeMembers[conversationId] && activeMembers[conversationId].includes(otherMemberId);
+  }
+
   io.on("connection", (socket) => {
-    socket.on("joinConversation", (newConversationId) => {
-      const currentRooms = socket.rooms;
-      currentRooms.forEach((room) => {
-        if (room !== socket.id) {
-          socket.leave(room);
+    //seen
+    socket.on("activeOnConversation", ({ conversationId, memberId }) => {
+      if (!activeMembers[conversationId]) {
+        activeMembers[conversationId] = [];
+      }
+      if (!activeMembers[conversationId].includes(memberId)) {
+        activeMembers[conversationId].push(memberId);
+      }
+    });
+
+    socket.on("disconnectOnConversation", ({ conversationId, memberId }) => {
+      console.log(conversationId);
+      if (activeMembers[conversationId]) {
+        const index = activeMembers[conversationId].indexOf(memberId);
+        if (index !== -1) {
+          activeMembers[conversationId].splice(index, 1);
         }
-      });
-      socket.join(`${newConversationId}`);
+      }
+    });
+
+    socket.on("joinConversation", (newConversationId) => {
+      if (!socket.rooms.has(newConversationId)) {
+        socket.join(newConversationId);
+      }
+    });
+
+    socket.on("isActive", (payload) => {
+      const active = isMemberActive(payload.conversationId, payload.otherMemberId);
+      socket.emit("responseIsActive", active);
     });
 
     socket.on("newMessage", (payload) => {
@@ -39,6 +64,7 @@ app.prepare().then(() => {
         payload.message,
       );
     });
+
     socket.on("deleteMessage", (payload) => {
       io.to(`${payload.conversationId}`).emit(
         "messageDeleted",

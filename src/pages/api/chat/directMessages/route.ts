@@ -1,22 +1,24 @@
 import { DirectMessage } from "@prisma/client";
 import { db } from "~/lib/db";
 import { NextApiRequest, NextApiResponse } from "next";
-import { isString } from "util";
 
 const MESSAGES_BATCH = 20;
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
-  // Ensure this handler responds to POST requests only
   if (req.method !== "POST") {
     return res.status(405).json({ message: "Method Not Allowed" });
   }
 
   try {
     const { userId, conversationId, cursor } = req.body;
-
+    const member = await db.member.findFirst({
+      where: {
+        userId,
+      },
+    });
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized" });
     }
@@ -36,7 +38,7 @@ export default async function handler(
         },
         where: {
           conversationId,
-          deleted: false 
+          deleted: false,
         },
         include: {
           member: {
@@ -54,7 +56,7 @@ export default async function handler(
         take: MESSAGES_BATCH,
         where: {
           conversationId,
-          deleted: false  // Add this condition to filter out deleted messages
+          deleted: false,
         },
         include: {
           member: {
@@ -67,9 +69,22 @@ export default async function handler(
           createdAt: "desc",
         },
       });
-    }    
+    }
 
     let nextCursor = null;
+    const conversation = await db.conversation.findFirst({
+      where: {
+        id: conversationId,
+      },
+      select: {
+        memberOneId: true,
+        memberTwoId: true,
+      },
+    });
+
+    if (!conversation) {
+      return res.status(404).json({ message: "Conversation not found" });
+    }
 
     if (
       messages.length === MESSAGES_BATCH &&
@@ -77,12 +92,46 @@ export default async function handler(
     ) {
       nextCursor = messages[MESSAGES_BATCH - 1]?.id;
     }
+    if (member) {
+      const seenUpdatePayload =
+        conversation.memberOneId === member.id
+          ? { seenByMemberOne: true }
+          : conversation.memberTwoId === member.id
+          ? { seenByMemberTwo: true }
+          : null;
+      if (seenUpdatePayload) {
+        await db.conversation.update({
+          where: { id: conversationId },
+          data: seenUpdatePayload,
+        });
+      }
+    }
+
+    const otherMemberId = conversation.memberOneId === member?.id
+    ?  conversation.memberTwoId 
+    : conversation.memberTwoId === member?.id
+    ? conversation.memberOneId 
+    : "";
+
+    const otherMember = await db.member.findFirst({
+      where: {
+        id: otherMemberId
+      },
+      include: {
+        user: true,
+      }
+    })
+
+    const otherMemberName = otherMember?.user.name;
+
+
 
     return res.status(200).json({
       items: messages,
       nextCursor,
+      otherMemberName,
+      otherMemberId
     });
-
   } catch (error) {
     console.log("[DIRECT_MESSAGES_GET]", error);
     return res.status(502).json({ message: "Internal Error" });
