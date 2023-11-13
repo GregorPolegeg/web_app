@@ -123,8 +123,6 @@ export default async function handler(
     })
 
     const otherMemberName = otherMember?.user.name;
-
-
     return res.status(200).json({
       items: messages,
       nextCursor,

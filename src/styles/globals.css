@@ -2,23 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
-
 .without-ring:focus {
-    outline: none;
-    box-shadow: none;
+  outline: none;
+  box-shadow: none;
 }
 
 .text-base:hover .hidden.ll {
-    display: flex;
-    flex-direction: row-reverse;
-  }
+  display: flex;
+  flex-direction: row-reverse;
+}
 
- .text-base:hover .hidden.rr {
-    display: flex;
-  }
-  
-  .message-content {
-    overflow-wrap: break-word;
-    word-break: break-all;
-  }
-  
+.text-base:hover .hidden.rr {
+  display: flex;
+}
+
+.touch-device:hover .hidden.ll,
+.touch-device:hover .hidden.rr {
+  display: none;
+}
+
+.message-content {
+  overflow-wrap: break-word;
+  word-break: break-all;
+}

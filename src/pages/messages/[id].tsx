@@ -16,6 +16,7 @@ import { timePassed } from "../api/time/route";
 import ImageModal from "../api/chat/ImageModal/ImageModal";
 import { getFileType } from "../api/chat/getFileType/getFileType";
 import ConversationSelector from "../api/chat/ConversationSelector/ConversationSelector";
+import Message from "../api/chat/Message/Message";
 
 interface Data {
   id: string;
@@ -506,79 +507,7 @@ const DisplayConversationElement = () => {
                 ref={messageContainerRef}
               >
                 {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={` max-w-lg text-base ${
-                      message.memberId === session?.user.memberId
-                        ? "ml-auto flex flex-row-reverse pr-2"
-                        : "mr-auto flex"
-                    }`}
-                  >
-                    <div>
-                      {message.fileUrl && (
-                        <>
-                          {getFileType(message.fileUrl) === "image" && (
-                            <div>
-                              <ImageModal
-                                url={`../${message.fileUrl}`}
-                                className="max-w-64 max-h-64 rounded-3xl pt-2"
-                                alt="Sent content"
-                              />
-                            </div>
-                          )}
-                          {getFileType(message.fileUrl) === "video" && (
-                            <video
-                              className="max-w-64 max-h-64 rounded-3xl pt-2"
-                              controls
-                              src={`../${message.fileUrl}`}
-                            >
-                              Your browser does not support the video tag.
-                            </video>
-                          )}
-                        </>
-                      )}
-                      <div
-                        className={`flex w-full ${
-                          message.memberId === session?.user.memberId
-                            ? "flex-row-reverse"
-                            : ""
-                        }`}
-                      >
-                        {message.content ? (
-                          <p
-                            className={`message-content my-[1px] inline-block max-w-lg rounded-2xl px-3 py-1 text-base ${
-                              message.memberId === session?.user.memberId
-                                ? " bg-blue-600 text-white"
-                                : " bg-gray-400"
-                            }`}
-                          >
-                            {message.content}
-                          </p>
-                        ) : (
-                          ""
-                        )}
-                      </div>
-                    </div>
-                    <div
-                      className={`hidden text-base text-black ${
-                        message.memberId === session?.user.memberId
-                          ? "ll right-[100%] mr-[-2px] flex items-center justify-end pr-4"
-                          : "rr left-[100%] ml-[-2px] flex items-center pl-4"
-                      }`}
-                    >
-                      <BsTrash
-                        className={`hover:text-zinc-700 ${
-                          message.memberId === session?.user.memberId
-                            ? "ml-2"
-                            : "mr-2"
-                        }`}
-                        onClick={() => handleDeleteMessage(message.id)}
-                      />
-                      <small className="block text-xs text-gray-700">
-                        {new Date(message.createdAt).toLocaleTimeString()}
-                      </small>
-                    </div>
-                  </div>
+                  <Message messageId={message.id} memberId={message.memberId} messageContent={message.content} fileUrl={message.fileUrl} createdAt={message.createdAt} handleDeleteMessage={handleDeleteMessage}/>
                 ))}
                 {cursor && (
                   <div className="mb-4 flex items-center justify-center">
@@ -597,7 +526,6 @@ const DisplayConversationElement = () => {
               </div>
             )}
           </div>
-
           <div className=" flex-shrink-0 px-5 pt-2">
             <ChatInput
               senderId={session?.user.memberId}

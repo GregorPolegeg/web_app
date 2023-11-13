@@ -1,6 +1,7 @@
+// @ts-nocheck
+
 const { createServer } = require("http");
 const { parse } = require("url");
-const callSendMessage = require("./src/server/callUpdateSeen");
 const next = require("next");
 const { Server } = require("socket.io");
 const dev = process.env.NODE_ENV !== "production";
@@ -37,7 +38,6 @@ app.prepare().then(() => {
     });
 
     socket.on("disconnectOnConversation", ({ conversationId, memberId }) => {
-      console.log(conversationId);
       if (activeMembers[conversationId]) {
         const index = activeMembers[conversationId].indexOf(memberId);
         if (index !== -1) {
