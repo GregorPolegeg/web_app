@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Image from "next/image";
 
 type ImageModalProps = {
   className?: string;
@@ -19,9 +20,11 @@ const ImageModal = ({ className, url, alt }: ImageModalProps) => {
 
   return (
     <>
-      <img
+      <Image
+        width={256}
+        height={256}
         src={url}
-        alt={alt}
+        alt={alt ?? ""}
         onClick={openModal}
         className={`${className} cursor-pointer`}
       />
@@ -31,12 +34,13 @@ const ImageModal = ({ className, url, alt }: ImageModalProps) => {
           onClick={closeModal}
         >
           <img src={url} alt="" className="relative max-h-[90%] max-w-[90%]" />
+
           <button
-              onClick={closeModal}
-              className="absolute top-2 right-2  text-2xl m-2 rounded-full text-white"
-            >
-              X
-            </button>
+            onClick={closeModal}
+            className="absolute right-2 top-2  m-2 rounded-full text-2xl text-white"
+          >
+            X
+          </button>
         </div>
       )}
     </>

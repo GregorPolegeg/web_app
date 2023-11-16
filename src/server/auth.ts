@@ -81,7 +81,7 @@ export const authOptions: NextAuthOptions = {
         });
 
         if (!existingUser) {
-          throw new Error("User not found");
+          throw new Error("Gmail incorrect");
         }
         if(existingUser.platformType != UserType.NORMAL){
           throw new Error("Sign with gmail");          

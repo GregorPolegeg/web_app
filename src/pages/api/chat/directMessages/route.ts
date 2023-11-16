@@ -127,7 +127,7 @@ export default async function handler(
       items: messages,
       nextCursor,
       otherMemberName,
-      otherMemberId
+      otherMemberId,
     });
   } catch (error) {
     console.log("[DIRECT_MESSAGES_GET]", error);

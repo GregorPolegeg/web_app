@@ -7,19 +7,22 @@
   box-shadow: none;
 }
 
-.text-base:hover .hidden.ll {
+.message-hover:hover .hidden.ll {
   display: flex;
   flex-direction: row-reverse;
 }
 
-.text-base:hover .hidden.rr {
+.message-hover:hover .hidden.rr {
   display: flex;
 }
 
-.touch-device:hover .hidden.ll,
-.touch-device:hover .hidden.rr {
-  display: none;
+.message-container {
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* IE10+/Edge */
+  user-select: none; /* Standard syntax */
 }
+
 
 .message-content {
   overflow-wrap: break-word;

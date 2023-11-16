@@ -27,6 +27,24 @@ export default async function handler(
         updatedAt: 'desc'
       },
       include: {
+        memberOne: {
+          select: {
+            user: {
+              select: {
+                profileImage: true,
+              },
+            },
+          },
+        },
+        memberTwo: {
+          select: {
+            user: {
+              select: {
+                profileImage: true,
+              },
+            },
+          },
+        },
         directMessage: {
           where:{
             deleted: false
@@ -40,15 +58,16 @@ export default async function handler(
               select: {
                 user: {
                   select: {
-                    name: true
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     });
+    
     
 
     if (!conversations) {
@@ -57,16 +76,17 @@ export default async function handler(
       });
     }
 
-
     const transformedConversations = conversations.map(convo => {
       const directMessage = convo.directMessage[0];
       let seen = false;
+      let fileUrl = null;
       if (convo.memberOneId === memberId) {
         seen = convo.seenByMemberOne;
+        fileUrl = convo.memberTwo.user.profileImage
       } else if (convo.memberTwoId === memberId) {
         seen = convo.seenByMemberTwo;
+        fileUrl = convo.memberOne.user.profileImage
       }
-
 
       return {
         id: convo.id,
@@ -74,7 +94,7 @@ export default async function handler(
         content: '',
         lastMessageUsername: directMessage?.member?.user?.name || null,
         lastMessage: directMessage?.content ?  (directMessage?.content) : (directMessage?.fileUrl ? "image" : null),
-        fileUrl: directMessage?.fileUrl || null,
+        fileUrl: fileUrl ?? "images/avatar_logo.png",
         updatedAt: convo.updatedAt,
         deleted: false,
         seen,

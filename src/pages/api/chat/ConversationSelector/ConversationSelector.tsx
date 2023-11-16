@@ -1,35 +1,62 @@
 // ConversationSelector.jsx
-import React from 'react';
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import React, { useState } from "react";
 
-  type ConversationSelectorProps = {
-    selectedConversationName: string;
-    setSelectedConversationName: (name: string) => void;
-    selectedAge: string;
-    setSelectedAge: (age: string) => void;
-    selectedGender: string;
-    setSelectedGender: (gender: string) => void;
-    newConvo: () => void;
-  };
+const ConversationSelector = () => {
+  const {data: session} = useSession();
 
-  const ConversationSelector: React.FC<ConversationSelectorProps> = ({
-  selectedConversationName,
-  setSelectedConversationName,
-  selectedAge,
-  setSelectedAge,
-  selectedGender,
-  setSelectedGender,
-  newConvo,
-}) => {
+  const [selectedConversationName, setSelectedConversationName] =
+    useState<string>("");
+  const [selectedAge, setSelectedAge] = useState<string>("");
+  const [selectedGender, setSelectedGender] = useState<string>("");
+  const router = useRouter();
+  
+  async function newConvo() {
+    try {
+      const response = await fetch("/api/user/getOrCreateConversation/route", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          memberOneId: session?.user.memberId,
+          name: selectedConversationName,
+          age: selectedAge,
+          gender: selectedGender,
+        }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setSelectedAge("");
+        setSelectedConversationName("");
+        setSelectedGender("");
+        router.push(data.id);
+      } else {
+        console.error("Failed to create conversation", response);
+      }
+    } catch (error) {
+      console.error("An error occurred:", error);
+    }
+  }
+
   if (selectedConversationName === "") {
     return (
       <div className="flex">
-        <button onClick={() => setSelectedConversationName("Business advice")} className="p-5">
+        <button
+          onClick={() => setSelectedConversationName("Business advice")}
+          className="p-5"
+        >
           Business advice
         </button>
-        <button onClick={() => setSelectedConversationName("Moral support")} className="p-5">
+        <button
+          onClick={() => setSelectedConversationName("Moral support")}
+          className="p-5"
+        >
           Moral support
         </button>
-        <button onClick={() => setSelectedConversationName("Relationship advice")} className="p-5">
+        <button
+          onClick={() => setSelectedConversationName("Relationship advice")}
+          className="p-5"
+        >
           Relationship advice
         </button>
       </div>
@@ -51,13 +78,31 @@ import React from 'react';
   } else if (selectedGender === "") {
     return (
       <div>
-        <button onClick={() => { setSelectedGender("WOMAN"); newConvo(); }} className="p-5">
+        <button
+          onClick={() => {
+            setSelectedGender("WOMAN");
+            newConvo();
+          }}
+          className="p-5"
+        >
           girl
         </button>
-        <button onClick={() => { setSelectedGender("MAN"); newConvo(); }} className="p-5">
+        <button
+          onClick={() => {
+            setSelectedGender("MAN");
+            newConvo();
+          }}
+          className="p-5"
+        >
           boy
         </button>
-        <button onClick={() => { setSelectedGender("OTHER"); newConvo(); }} className="p-5">
+        <button
+          onClick={() => {
+            setSelectedGender("OTHER");
+            newConvo();
+          }}
+          className="p-5"
+        >
           Don't care
         </button>
       </div>
