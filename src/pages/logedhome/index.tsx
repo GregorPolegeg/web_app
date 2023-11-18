@@ -15,12 +15,8 @@ const index = () => {
     <SocketProvider>
       <div className="h-full pt-[65px]">
         {subscriptionPlan !== "NONE" ? (
-          <div className="flex h-full">
-            <div className="h-[100px] w-[100px] bg-teal-100"></div>
-            <div className="h-[100px] w-[100px] bg-red-950"></div>
-            <div className="h-[100px] w-[100px] bg-cyan-800"></div>
-            <div className="h-[100px] w-[100px] bg-red-200"></div>
-          </div>
+          <>
+          </>
         ) : (
           <Subscriptions />
         )}

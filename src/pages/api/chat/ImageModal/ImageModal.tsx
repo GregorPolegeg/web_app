@@ -26,7 +26,7 @@ const ImageModal = ({ className, url, alt }: ImageModalProps) => {
         src={url}
         alt={alt ?? ""}
         onClick={openModal}
-        className={`${className} cursor-pointer`}
+        className={`${className} cursor-pointer object-cover w-full h-auto no-highlight`}
       />
       {isOpen && (
         <div

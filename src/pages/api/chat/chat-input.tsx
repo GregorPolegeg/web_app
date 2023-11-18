@@ -1,10 +1,11 @@
 import { Controller, useForm } from "react-hook-form";
 import { useSocket } from "../providers/socket-provider";
 import { VscSend } from "react-icons/vsc";
-import { CiCirclePlus } from "react-icons/ci";
+import { CiCirclePlus, CiMicrophoneOn } from "react-icons/ci";
 import { useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import Circle from "./loadingCircle/circle";
+import MicrophoneRecorder from "./MicrophoneRecorder";
 interface ChatInputProps {
   senderId: string;
   conversationId: string;
@@ -180,15 +181,13 @@ export const ChatInput = ({
             },
           }}
           render={({ field }) => (
-            <div className="flex flex-grow gap-2 rounded-md border-gray-400 bg-white p-2 shadow-sm focus:shadow-lg">
-              <div>
+            <div className="flex items-center flex-grow gap-2 rounded-md border-gray-400 bg-white p-2 shadow-sm focus:shadow-lg">
                 <CiCirclePlus
                   onClick={() =>
                     document.getElementById("imageUpload")?.click()
                   }
                   className="text-2xl hover:cursor-pointer hover:text-zinc-700"
                 />
-              </div>
               <input
                 {...field}
                 ref={inputRef}

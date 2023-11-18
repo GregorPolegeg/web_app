@@ -15,6 +15,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
   return (
     <SocketProvider>
       <SessionProvider session={session}>
+        <link rel="manifes" href="/manifest.json"/>
         <Component {...pageProps} />
       </SessionProvider>
     </SocketProvider>

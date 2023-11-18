@@ -11,6 +11,8 @@ interface FormInputFieldProps<TFieldValues extends FieldValues> {
   icon?: JSX.Element;
   defaultValue?: string;
   toggleVisibility?: () => void;
+  value?: string
+  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
   isVisible?: boolean;
 }
 
@@ -22,6 +24,8 @@ export const FormInputField: FC<FormInputFieldProps<any>> = ({
   placeholder,
   icon,
   defaultValue = "",
+  value,
+  onChange,
   toggleVisibility,
   isVisible,
 }) => {

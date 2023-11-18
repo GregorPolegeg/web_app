@@ -5,6 +5,7 @@ import { BsTrash } from "react-icons/bs";
 import { getFileType } from "../getFileType/getFileType";
 import ImageModal from "../ImageModal/ImageModal";
 import { FaRegCopy } from "react-icons/fa";
+import MessageOptions from "./MessageOptions";
 
 type MessageProps = {
   messageId: string;
@@ -28,11 +29,18 @@ const Message: React.FC<MessageProps> = ({
   const [showOptions, setShowOptions] = useState(false);
   const [isTouch, setIsTouch] = useState(false);
 
-  const copyTextToClipboard = (text: string) => {
+  const copyToClipboard = async (data: string | HTMLImageElement) => {
     try {
-      navigator.clipboard.writeText(text);
+      if (typeof data === 'string') {
+        await navigator.clipboard.writeText(data);
+      } else if (data instanceof HTMLImageElement) {
+        const blob = await fetch(data.src).then(r => r.blob());
+        await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+      } else {
+        console.error('The provided data is neither text nor an HTMLImageElement');
+      }
     } catch (err) {
-      console.error("Failed to copy text: ", err);
+      console.error('Failed to copy:', err);
     }
   };
 
@@ -88,7 +96,7 @@ const Message: React.FC<MessageProps> = ({
       key={messageId}
       className={` ${
         isTouch ? "" : "message-hover"
-      } message-container max-w-lg text-base ${
+      } message-container max-w-lg text-base items-center ${
         memberId === session?.user.memberId
           ? "ml-auto flex flex-row-reverse pr-2"
           : "mr-auto flex"
@@ -137,37 +145,17 @@ const Message: React.FC<MessageProps> = ({
           )}
         </div>
       </div>
-      <div
-        className={` 
-        ${
-          isTouch
-            ? showOptions
-              ? memberId === session?.user.memberId
-                ? "flex-row-reverse"
-                : ""
-              : "hidden"
-            : "hidden"
-        } z-1 gap-2 rounded-3xl bg-white text-xl text-black ${
-          memberId === session?.user.memberId
-            ? "ll flex items-center justify-end px-4"
-            : "rr flex items-center px-4"
-        }`}
-      >
-        <BsTrash
-          className={`hover:text-zinc-700 `}
-          onClick={() => handleDeleteMessage(messageId)}
-        />
-        <FaRegCopy
-          className={"hover:text-zinc-700"}
-          onClick={() => {
-            copyTextToClipboard(messageContent);
-            setShowOptions(false);
-          }}
-        />
-        <small className="block text-sm text-gray-700">
-          {new Date(createdAt).toLocaleTimeString()}
-        </small>
-      </div>
+      <MessageOptions
+        memberId={memberId}
+        messageId={messageId}
+        messageContent={messageContent}
+        showOptions={showOptions}
+        createdAt={createdAt}
+        setShowOptions={setShowOptions}
+        handleDeleteMessage={handleDeleteMessage}
+        copyTextToClipboard={copyToClipboard}
+        isTouch={isTouch}
+      />
     </div>
   );
 };

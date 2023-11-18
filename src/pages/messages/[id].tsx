@@ -63,27 +63,44 @@ const DisplayConversationElement = () => {
         observer.unobserve(topSentinelRef.current);
       }
     };
-  }, [cursor,topSentinelRef]);
+  }, [cursor, topSentinelRef]);
+
+  const debounce = <F extends (...args: any[]) => any>(
+    func: F,
+    delay: number,
+  ): ((...args: Parameters<F>) => void) => {
+    let inDebounce: ReturnType<typeof setTimeout>;
+
+    return (...args: Parameters<F>) => {
+      clearTimeout(inDebounce);
+      inDebounce = setTimeout(() => {
+        func(...args);
+      }, delay);
+    };
+  };
 
   useEffect(() => {
-    const handleScroll = () => {
+    const handleScroll = async () => {
       if (messageContainerRef.current) {
         const { scrollTop, scrollHeight, clientHeight } =
           messageContainerRef.current;
-        if (Math.abs(scrollHeight - clientHeight + scrollTop) < 20) {
-          loadOldMessages();
+        if (Math.abs(scrollHeight - clientHeight + scrollTop) < 100) {
+          await loadOldMessages();
         }
       }
     };
+
+    const debouncedHandleScroll = debounce(handleScroll, 100);
+
     if (messageContainerRef.current) {
       const messageContainer = messageContainerRef.current;
-      messageContainer.addEventListener("scroll", handleScroll);
+      messageContainer.addEventListener("scroll", debouncedHandleScroll);
 
       return () => {
-        messageContainer.removeEventListener("scroll", handleScroll);
+        messageContainer.removeEventListener("scroll", debouncedHandleScroll);
       };
     }
-  }, [cursor]);
+  }, [cursor,loadOldMessages]);
 
   async function handleDeleteMessage(messageId: string) {
     try {
@@ -186,6 +203,8 @@ const DisplayConversationElement = () => {
 
   useEffect(() => {
     if (session) {
+      setCursor(null);
+      setMessages([]);
       const conversationId = router.query.id as string;
       if (socket) {
         socket.emit("joinConversation", conversationId);
@@ -240,7 +259,7 @@ const DisplayConversationElement = () => {
   function onOpenConversation(conversationId: string, fileUrl: string) {
     if (conversationId === "t") setOtherMemberName("");
     router.push(`/messages/${conversationId}`);
-    setOtherMemberFileUrl(fileUrl)
+    setOtherMemberFileUrl(fileUrl);
   }
 
   if (session?.user.memberId) {
@@ -268,7 +287,7 @@ const DisplayConversationElement = () => {
           } h-full w-full flex-col bg-gray-100  pb-5 md:flex md:pt-[65px]`}
         >
           <div className="flex h-[53px] w-full items-center justify-between border-b border-zinc-200 bg-white p-5 shadow-sm">
-            {selectedConversation ? (
+            {selectedConversation && selectedConversation != "t" ? (
               <>
                 <div className="flex items-center ">
                   <button
@@ -285,14 +304,14 @@ const DisplayConversationElement = () => {
                   />
                   <h2 className="text-xl font-bold">{otherMemberName}</h2>
                 </div>
-                <div className="flex gap-2 text-xl">
-                  <button className="rounded-full  px-2 py-2 text-black">
+                <div className="no-highlight flex gap-1 rounded-3xl bg-blue-600 text-xl text-white">
+                  <button className=" rounded-3xl px-2 py-2 hover:bg-blue-500">
                     <AiOutlineBell />
                   </button>
-                  <button className="rounded-full  px-2 py-2 text-black">
+                  <button className="px-2 py-2 hover:rounded-3xl hover:bg-blue-500">
                     <FaRegMoneyBillAlt />
                   </button>
-                  <button className="rounded-full  px-2 py-2 text-black">
+                  <button className="rounded-3xl px-2 py-2 hover:bg-blue-500">
                     <AiOutlineStar />
                   </button>
                 </div>
@@ -301,8 +320,11 @@ const DisplayConversationElement = () => {
               ""
             )}
           </div>
-          <div ref={topSentinelRef} className="flex flex-grow flex-col-reverse overflow-y-auto pl-2">
-            {selectedConversation == "" ? (
+          <div
+            ref={topSentinelRef}
+            className="flex flex-grow flex-col-reverse overflow-y-auto pl-2"
+          >
+            {selectedConversation === "t" ? (
               <ConversationSelector />
             ) : (
               <div
@@ -311,7 +333,7 @@ const DisplayConversationElement = () => {
               >
                 {messages.map((message) => (
                   <Message
-                    key={message.id} 
+                    key={message.id}
                     messageId={message.id}
                     memberId={message.memberId}
                     messageContent={message.content}

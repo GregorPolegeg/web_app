@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { AiOutlinePlus } from "react-icons/ai";
+import { AiOutlineMore, AiOutlinePlus } from "react-icons/ai";
 import { BsTrash } from "react-icons/bs";
 import { timePassed } from "../../time/route";
 import { useSession } from "next-auth/react";
 import { useSocket } from "../../providers/socket-provider";
 import { useRouter } from "next/router";
 import Image from 'next/image'
+import { IoMdMore } from "react-icons/io";
 
 type Conversation = {
   id: string;
@@ -118,7 +119,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
           <h2 className="p-3 text-xl font-bold">No Coversations</h2>
           <button
             className="px-5 py-2 text-2xl"
-            onClick={() => setSelectedConversation("")}
+            onClick={() => {setSelectedConversation(""); router.push("/")}}
           >
             <AiOutlinePlus />
           </button>
@@ -129,7 +130,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
             <h2 className="p-3 text-xl font-bold">Messages</h2>
             <button
               className="px-5 py-2 text-2xl"
-              onClick={() => setSelectedConversation("")}
+              onClick={() => {setSelectedConversation("t"); router.push("./t")}}
             >
               <AiOutlinePlus />
             </button>
@@ -146,7 +147,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
                   updateSeenStatus(conversation.id);
                 }
               }}
-              className={`flex w-full animate-slideInFromLeft items-center justify-between rounded-2xl px-2 shadow-sm hover:bg-gray-200 focus:outline-none`}
+              className={`flex w-full animate-slideInFromLeft items-center justify-between rounded-2xl px-2 shadow-sm hover:bg-gray-200 no-highlight`}
               style={{ animationDelay: `${index * 0.1}s` }}
               role="button"
               tabIndex={0}
@@ -195,13 +196,13 @@ const ConversationList: React.FC<ConversationListProps> = ({
                 ) : (
                   <div className=" h-2 w-2 rounded-full bg-blue-600"></div>
                 )}
-                <div className="p-3 text-base duration-300 hover:text-red-600">
+                <div className="p-3 text-xl duration-300  rounded-full hover:text-blue-600">
                   <button
                     onClick={(event) => {
                       event.stopPropagation();
                     }}
                   >
-                    <BsTrash />
+                    <IoMdMore />
                   </button>
                 </div>
               </div>

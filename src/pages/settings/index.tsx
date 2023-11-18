@@ -1,5 +1,6 @@
 import { useSession } from "next-auth/react";
 import React, { useState, useEffect, useRef } from "react";
+import Circle from "../api/chat/loadingCircle/circle";
 
 type userSettingsProps = {
   userName: string;
@@ -11,7 +12,7 @@ const Index = () => {
   const [userSettings, setUserSettings] = useState<userSettingsProps | null>(
     null,
   );
-  const [imagePreview, setImagePreview] = useState<string>();
+  const [imagePreview, setImagePreview] = useState<string>("");
   const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -41,10 +42,11 @@ const Index = () => {
     if (session) {
       return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
-        if (session?.user.id && userSettings?.file && userSettings?.userName) {
+        if (session?.user.id && userSettings?.userName) {
           const formData = new FormData();
           formData.append("userId", session?.user.id ?? "");
           formData.append("userName", userSettings?.userName ?? "");
+          if(userSettings?.file)
           formData.append("image", userSettings?.file ?? "");
 
           console.log(formData);
@@ -80,7 +82,7 @@ const Index = () => {
   };
 
   useEffect(() => {
-    if (session?.user.id && session.user.id !== undefined) {
+    if (session?.user.id && session.user.id !== undefined && imagePreview === "") {
       async function getUserSettings() {
         try {
           const response = await fetch("/api/settings/getUserSettings", {
@@ -116,20 +118,35 @@ const Index = () => {
   }
 
   return (
-    <div className="flex h-screen items-center justify-center">
-      <form className="text-center">
+    <div className="flex h-screen items-center justify-center ">
+      <form className="flex flex-col items-center gap-7 rounded-2xl bg-zinc-200 px-10 pb-10 pt-7 text-center shadow-xl">
+        <h1 className="text-3xl">Settings</h1>
+        <div className="relative">
+          <img onClick={() => fileInputRef.current?.click()} src={imagePreview} className="max-h-40 max-w-[160px] cursor-pointer rounded-full object-cover" alt="Preview" />
+          {uploadProgress > 0 && uploadProgress < 100 && (
+            <div
+              className="rounded-full"
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: "rgba(0, 0, 0, 0.5)",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Circle />
+            </div>
+          )}
+        </div>
         <input
           type="text"
           value={userSettings.userName}
           onChange={handleNameChange}
-          className="mb-2.5"
-        />
-        <br />
-        <img
-          src={imagePreview}
-          alt="User"
-          className="max-w- max-h-60 cursor-pointer object-cover"
-          onClick={() => fileInputRef.current?.click()}
+          className="without-ring min-w-[250px] rounded-2xl bg-zinc-300 p-2 "
         />
         <input
           type="file"
@@ -137,8 +154,11 @@ const Index = () => {
           onChange={handleImageChange}
           className="hidden"
         />
-        <br />
-        <button type="button" onClick={handleSubmit} className="mt-2.5">
+        <button
+          type="button"
+          onClick={handleSubmit}
+          className="rounded-2xl bg-blue-600 p-3 font-semibold text-white"
+        >
           Update Settings
         </button>
       </form>
