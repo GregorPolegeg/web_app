@@ -71,6 +71,16 @@ export default async function handler(
             imagePath = `members/${userId}/${file.originalFilename}`;
           }
         }
+      }else{
+        const imageUrl = await db.user.findFirst({
+          where:{
+            id: userId
+          },
+          select:{
+            profileImage: true
+          }
+        })
+        imagePath = imageUrl?.profileImage
       }
 
       const updatedUser = await db.user.update({

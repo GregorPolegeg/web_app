@@ -1,4 +1,4 @@
-import { useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import React, { useState, useEffect, useRef } from "react";
 import Circle from "../api/chat/loadingCircle/circle";
 
@@ -8,7 +8,7 @@ type userSettingsProps = {
 };
 
 const Index = () => {
-  const { data: session } = useSession();
+  const { data: session, update } = useSession();
   const [userSettings, setUserSettings] = useState<userSettingsProps | null>(
     null,
   );
@@ -49,7 +49,6 @@ const Index = () => {
           if(userSettings?.file)
           formData.append("image", userSettings?.file ?? "");
 
-          console.log(formData);
           xhr.open("POST", "/api/settings/setUserSettings");
 
           xhr.upload.onprogress = (event) => {
@@ -61,6 +60,7 @@ const Index = () => {
 
           xhr.onload = () => {
             if (xhr.status === 200 || xhr.status === 201) {
+              update({ name: userSettings.userName })
               try {
                 const response = JSON.parse(xhr.responseText);
                 setUploadProgress(0);
