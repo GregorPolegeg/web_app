@@ -147,7 +147,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
                   updateSeenStatus(conversation.id);
                 }
               }}
-              className={`flex w-full animate-slideInFromLeft items-center justify-between rounded-2xl px-2 shadow-sm hover:bg-gray-200 no-highlight`}
+              className={`flex w-full animate-slideInFromLeft items-center justify-between px-2 shadow-sm hover:bg-gray-200 no-highlight`}
               style={{ animationDelay: `${index * 0.1}s` }}
               role="button"
               tabIndex={0}
