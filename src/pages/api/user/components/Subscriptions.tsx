@@ -5,7 +5,7 @@ enum SubscriptionsProps {
   week,
   month,
 }
-
+//drek
 const Subscriptions = () => {
   const [selectedSubscription, setSelectedSubscription] =
     useState<SubscriptionsProps>(SubscriptionsProps.month);
