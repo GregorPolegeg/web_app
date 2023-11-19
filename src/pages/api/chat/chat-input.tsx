@@ -24,6 +24,10 @@ export const ChatInput = ({
   const [imageLoading, setImageLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const { socket } = useSocket();
+  const { data: session } = useSession();
+
+  const formDataRef = useRef<Object | null>(null);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -42,11 +46,6 @@ export const ChatInput = ({
       reader.readAsDataURL(file);
     }
   };
-
-  const { socket } = useSocket();
-  const { data: session } = useSession();
-
-  const formDataRef = useRef<Object | null>(null);
 
   const onSubmit = (data: Object) => {
     formDataRef.current = data;
@@ -88,6 +87,7 @@ export const ChatInput = ({
                   setImagePreview(null);
 
                   setUploadProgress(0);
+                  
                   socket.emit(`newMessage`, {
                     conversationId,
                     message: response.data,
@@ -188,6 +188,7 @@ export const ChatInput = ({
                   }
                   className="text-2xl hover:cursor-pointer hover:text-zinc-700"
                 />
+                <MicrophoneRecorder conversationId={conversationId} memberId={senderId} otherMemderId={otherMemberId}/>
               <input
                 {...field}
                 ref={inputRef}

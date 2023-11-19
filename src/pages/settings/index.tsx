@@ -122,7 +122,7 @@ const Index = () => {
       <form className="flex flex-col items-center gap-7 rounded-2xl bg-zinc-200 px-10 pb-10 pt-7 text-center shadow-xl">
         <h1 className="text-3xl">Settings</h1>
         <div className="relative">
-          <img onClick={() => fileInputRef.current?.click()} src={imagePreview} className="max-h-40 max-w-[160px] cursor-pointer rounded-full object-cover" alt="Preview" />
+          <img onClick={() => fileInputRef.current?.click()} src={imagePreview} className="max-h-40 max-w-[160px] cursor-pointer rounded-full" alt="Preview" />
           {uploadProgress > 0 && uploadProgress < 100 && (
             <div
               className="rounded-full"

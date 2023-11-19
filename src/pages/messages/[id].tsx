@@ -298,7 +298,7 @@ const DisplayConversationElement = () => {
                     <AiOutlineArrowLeft className="text-2xl" />
                   </button>
                   <img
-                    className="ml-5 mr-3 h-10 w-10 rounded-full"
+                    className="ml-5 mr-3 h-10 w-10 rounded-full object-cover"
                     src={`../${otherMemberFileUrl}`}
                     alt="Logo"
                   />
