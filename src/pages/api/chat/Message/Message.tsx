@@ -112,14 +112,14 @@ const Message: React.FC<MessageProps> = ({
               <div>
                 <ImageModal
                   url={`/${fileUrl}`}
-                  className="max-w-64 max-h-64 rounded-3xl pt-2"
+                  className="max-w-64 max-h-64 rounded-3xl pt-1 pb-1"
                   alt="Sent content"
                 />
               </div>
             )}
             {getFileType(fileUrl) === "video" && (
               <video
-                className="max-w-64 max-h-64 rounded-3xl pt-2"
+                className="max-w-64 max-h-64 rounded-3xl pt-1"
                 controls
                 src={`../${fileUrl}`}
               >
@@ -145,8 +145,8 @@ const Message: React.FC<MessageProps> = ({
             <p
               className={`message-content my-[1px] inline-block max-w-lg rounded-2xl px-3 py-1 text-base ${
                 memberId === session?.user.memberId
-                  ? " bg-blue-600 text-white"
-                  : " bg-gray-400"
+                  ? " bg-blue-500 text-white"
+                  : " bg-gray-300"
               }`}
             >
               {messageContent}

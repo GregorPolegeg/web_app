@@ -5,7 +5,7 @@ import { timePassed } from "../../time/route";
 import { useSession } from "next-auth/react";
 import { useSocket } from "../../providers/socket-provider";
 import { useRouter } from "next/router";
-import Image from 'next/image'
+import Image from "next/image";
 import { IoMdMore } from "react-icons/io";
 
 type Conversation = {
@@ -110,7 +110,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
     <div
       className={`${
         selectedConversation == null ? "block" : "hidden"
-      } h-full w-full border-r border-gray-300 pt-[65px] md:block md:w-[400px] md:min-w-[400px]`}
+      } h-full w-full border-r border-gray-300 pt-[65px] md:block md:w-[380px] md:min-w-[380px]`}
     >
       {conversations === null ? (
         <div>Loading...</div>
@@ -119,20 +119,26 @@ const ConversationList: React.FC<ConversationListProps> = ({
           <h2 className="p-3 text-xl font-bold">No Coversations</h2>
           <button
             className="px-5 py-2 text-2xl"
-            onClick={() => {setSelectedConversation(""); router.push("/")}}
+            onClick={() => {
+              setSelectedConversation("t");
+              router.push("./t");
+            }}
           >
             <AiOutlinePlus />
           </button>
         </div>
       ) : (
         <div>
-          <div className="flex flex-col ">
-            <h2 className="p-3 text-xl font-bold">Messages</h2>
+          <div className="flex flex-col shadow-sm">
+            <h2 className="px-4 pt-1 text-xl font-bold">Conversations</h2>
             <button
               className="px-5 py-2 text-2xl"
-              onClick={() => {setSelectedConversation("t"); router.push("./t")}}
+              onClick={() => {
+                setSelectedConversation("t");
+                router.push("./t");
+              }}
             >
-              <AiOutlinePlus />
+              <AiOutlinePlus className="mb-2 text-2xl text-blue-500" />
             </button>
           </div>
           {conversations.map((conversation: Conversation, index) => (
@@ -147,7 +153,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
                   updateSeenStatus(conversation.id);
                 }
               }}
-              className={`flex w-full animate-slideInFromLeft items-center justify-between px-2 shadow-sm hover:bg-gray-200 no-highlight`}
+              className={`no-highlight flex w-full animate-slideInFromLeft items-center justify-between px-2 shadow-sm hover:bg-gray-100`}
               style={{ animationDelay: `${index * 0.1}s` }}
               role="button"
               tabIndex={0}
@@ -168,17 +174,20 @@ const ConversationList: React.FC<ConversationListProps> = ({
                     layout="fixed"
                   />
                 </div>
-                <div className="flex flex-col pl-2">
-                  <h1 className="text-left text-lg font-semibold">
+                <div className="flex flex-col pl-3">
+                  <h1 className="text-md text-left font-semibold">
                     {conversation.name}
                   </h1>
                   <p className="text-base font-medium">
                     {conversation.content}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-sm text-gray-500">
                     {conversation.lastMessage ? (
                       <span>
-                        {conversation.lastMessageUsername}:{" "}
+                        {conversation.lastMessageUsername == session?.user.name
+                          ? "You"
+                          : conversation.lastMessageUsername}
+                        :{" "}
                         {conversation.lastMessage.length > 20
                           ? `${conversation.lastMessage.substring(0, 20)}...`
                           : conversation.lastMessage}{" "}
@@ -196,13 +205,13 @@ const ConversationList: React.FC<ConversationListProps> = ({
                 ) : (
                   <div className=" h-2 w-2 rounded-full bg-blue-600"></div>
                 )}
-                <div className="p-3 text-xl duration-300  rounded-full hover:text-blue-600">
+                <div className="mt-2 rounded-full p-1 text-xl  duration-300 hover:text-blue-500">
                   <button
                     onClick={(event) => {
                       event.stopPropagation();
                     }}
                   >
-                    <IoMdMore />
+                    <IoMdMore className="text-2xl" />
                   </button>
                 </div>
               </div>
