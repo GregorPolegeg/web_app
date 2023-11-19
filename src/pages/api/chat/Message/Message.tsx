@@ -1,4 +1,3 @@
-
 import { useSession } from "next-auth/react";
 import React, { useEffect, useRef, useState } from "react";
 import { BsTrash } from "react-icons/bs";
@@ -31,16 +30,20 @@ const Message: React.FC<MessageProps> = ({
 
   const copyToClipboard = async (data: string | HTMLImageElement) => {
     try {
-      if (typeof data === 'string') {
+      if (typeof data === "string") {
         await navigator.clipboard.writeText(data);
       } else if (data instanceof HTMLImageElement) {
-        const blob = await fetch(data.src).then(r => r.blob());
-        await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+        const blob = await fetch(data.src).then((r) => r.blob());
+        await navigator.clipboard.write([
+          new ClipboardItem({ [blob.type]: blob }),
+        ]);
       } else {
-        console.error('The provided data is neither text nor an HTMLImageElement');
+        console.error(
+          "The provided data is neither text nor an HTMLImageElement",
+        );
       }
     } catch (err) {
-      console.error('Failed to copy:', err);
+      console.error("Failed to copy:", err);
     }
   };
 
@@ -96,7 +99,7 @@ const Message: React.FC<MessageProps> = ({
       key={messageId}
       className={` ${
         isTouch ? "" : "message-hover"
-      } message-container max-w-lg text-base items-center ${
+      } message-container max-w-lg items-center text-base ${
         memberId === session?.user.memberId
           ? "ml-auto flex flex-row-reverse pr-2"
           : "mr-auto flex"
@@ -122,6 +125,14 @@ const Message: React.FC<MessageProps> = ({
               >
                 Your browser does not support the video tag.
               </video>
+            )}
+            {getFileType(fileUrl) === "audio" && (
+              <audio
+                src={`../${fileUrl}`}
+                controls
+              >
+                Your browser does not support the audio tag.
+              </audio>
             )}
           </>
         )}

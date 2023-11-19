@@ -160,7 +160,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <Image
-                    className="m-2 h-14 w-14 rounded-full"
+                    className="m-2 h-14 w-14 rounded-full object-cover"
                     src={`/${conversation.fileUrl}`}
                     alt="Logo"
                     width={56}
