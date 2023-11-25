@@ -110,7 +110,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
     <div
       className={`${
         selectedConversation == null ? "block" : "hidden"
-      } h-full w-full border-r border-gray-300 pt-[65px] md:block md:w-[380px] md:min-w-[380px]`}
+      } h-full w-full border-r border-gray-300 md:pt-[65px] pt-2 md:block md:w-[380px] md:min-w-[380px]`}
     >
       {conversations === null ? (
         <div>Loading...</div>
