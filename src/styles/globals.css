@@ -8,9 +8,22 @@
 }
 
 .no-highlight {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   user-select: none;
   outline: none;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* profile image */
+
+.img-fade {
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.img-fade.loaded {
+  opacity: 1;
 }
 
 .message-hover:hover .hidden.ll {

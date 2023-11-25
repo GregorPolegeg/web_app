@@ -13,14 +13,12 @@ import { compare } from "bcrypt";
 import { getMemberId } from "~/pages/api/user/getMemberId/getMemberId";
 import { UserType } from "@prisma/client";
 
-
-
 declare module "next-auth" {
   interface Session extends DefaultSession {
     user: DefaultSession["user"] & {
-      id: string,
-      subscriptionPlan: string,
-      memberId: string,
+      id: string;
+      subscriptionPlan: string;
+      memberId: string;
     };
   }
 }
@@ -35,10 +33,11 @@ export const authOptions: NextAuthOptions = {
 
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
-    async jwt({ token, user, trigger,session }) {
-      if(trigger === "update" && session?.name){
-        token.name = session.name;
-      }
+    async jwt({ token, user, trigger, session }) {
+        if (trigger === "update" && session?.image ) {
+          token.picture = session.image;
+          token.name = session.name;
+        }
       if (user && user.id) {
         return {
           ...token,
@@ -46,12 +45,13 @@ export const authOptions: NextAuthOptions = {
           type: user.type,
           platformType: user.platformType,
           memberId: await getMemberId(user.id),
-          subscriptionPlan: user.subscriptionPlan
+          subscriptionPlan: user.subscriptionPlan,
+          picture: user.image,
         };
       }
       return token;
     },
-    session: ({ session, token}) => {
+    session: ({ session, token }) => {
       return {
         ...session,
         user: {
@@ -60,11 +60,12 @@ export const authOptions: NextAuthOptions = {
           type: token.type,
           memberId: token.memberId,
           platformtype: token.platformType,
-          subscriptionPlan: token.subscriptionPlan
+          subscriptionPlan: token.subscriptionPlan,
+          image: token.picture
         },
       };
     },
-  },  
+  },
   adapter: PrismaAdapter(db),
   providers: [
     CredentialsProvider({
@@ -86,10 +87,10 @@ export const authOptions: NextAuthOptions = {
         if (!existingUser) {
           throw new Error("Gmail incorrect");
         }
-        if(existingUser.platformType != UserType.NORMAL){
-          throw new Error("Sign with gmail");          
+        if (existingUser.platformType != UserType.NORMAL) {
+          throw new Error("Sign with gmail");
         }
-        
+
         if (!existingUser.password) {
           throw new Error("Sign with gmail");
         }
@@ -107,7 +108,9 @@ export const authOptions: NextAuthOptions = {
           name: existingUser.name,
           type: existingUser.type,
           platformType: existingUser.platformType,
-          subscriptionPlan: existingUser.subscriptionPlan}
+          subscriptionPlan: existingUser.subscriptionPlan,
+          image: existingUser.profileImage,
+        };
       },
     }),
 

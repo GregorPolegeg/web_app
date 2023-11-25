@@ -9,6 +9,7 @@
 /coverage
 
 /public
+/public/sw.js.map
 
 # database
 /prisma/db.sqlite

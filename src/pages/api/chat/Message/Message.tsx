@@ -3,8 +3,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { BsTrash } from "react-icons/bs";
 import { getFileType } from "../getFileType/getFileType";
 import ImageModal from "../ImageModal/ImageModal";
-import { FaRegCopy } from "react-icons/fa";
 import MessageOptions from "./MessageOptions";
+import VoiceMessage from "./VoiceMessage";
 
 type MessageProps = {
   messageId: string;
@@ -127,12 +127,9 @@ const Message: React.FC<MessageProps> = ({
               </video>
             )}
             {getFileType(fileUrl) === "audio" && (
-              <audio
+              <VoiceMessage
                 src={`../${fileUrl}`}
-                controls
-              >
-                Your browser does not support the audio tag.
-              </audio>
+              />
             )}
           </>
         )}

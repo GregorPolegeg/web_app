@@ -30,7 +30,7 @@ const UserNavigation = () => {
         </div>
 
         {/* Desktop Menu */}
-        <div className="rounded-md w-full md:w-auto no-highlight flex text-[25px] md:text-2xl">
+        <div className="rounded-md w-full items-center md:w-auto no-highlight flex text-[25px] md:text-2xl">
           <Link
             href="/"
             className={`${normalClass}`}
@@ -53,11 +53,17 @@ const UserNavigation = () => {
             <AiOutlineAppstore />
           </Link>
           <Link
-            href="/"
+            href="/settings"
             className={`${normalClass}`}
             onClick={() => setSelectedItem(SelectedProps.o2)}
           >
-            <AiOutlineBranches />
+            <Image
+            width={30}
+            height={30}
+            className="rounded-full"
+            src={`/${sessionData?.user.image ?? "images/avatar_logo.png"}`}
+            alt={"profile image"}
+            />
           </Link>
         </div>
 

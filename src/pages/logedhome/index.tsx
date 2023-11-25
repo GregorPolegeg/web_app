@@ -2,6 +2,7 @@ import { useSession } from "next-auth/react";
 import React from "react";
 import { SocketProvider, useSocket } from "../api/providers/socket-provider";
 import Subscriptions from "../api/user/components/Subscriptions";
+import Feed from "../api/feed/Feed";
 const index = () => {
   const { data: session } = useSession();
   const subscriptionPlan = session?.user.subscriptionPlan;
@@ -13,10 +14,9 @@ const index = () => {
   }
   return (
     <SocketProvider>
-      <div className="h-full pt-[65px]">
+      <div className="h-full md:pt-[55px]">
         {subscriptionPlan !== "NONE" ? (
-          <>
-          </>
+          <Feed></Feed>
         ) : (
           <Subscriptions />
         )}

@@ -4,6 +4,7 @@ import HomePage from "./home";
 import { useSession } from "next-auth/react";
 import LogedPage from "./logedhome"
 import { Metadata } from "next";
+
 const poppins = Poppins({
   subsets: ["latin"],
   variable: "--font-Poppins",
