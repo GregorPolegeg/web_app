@@ -79,8 +79,13 @@ export default async function handler(
       select: {
         memberOneId: true,
         memberTwoId: true,
+        name: true,
       },
     });
+
+    if(conversation?.memberOneId != member?.id && conversation?.memberTwoId != member?.id){
+      return res.status(400).json({ message: "Access denied" });
+    }
 
     if (!conversation) {
       return res.status(404).json({ message: "Conversation not found" });
@@ -128,6 +133,7 @@ export default async function handler(
       nextCursor,
       otherMemberName,
       otherMemberId,
+      conversationName: conversation.name,
     });
   } catch (error) {
     console.log("[DIRECT_MESSAGES_GET]", error);

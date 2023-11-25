@@ -144,9 +144,11 @@ export const ChatInput = ({
             src={imagePreview}
             alt="Preview"
             style={{ width: "100%", height: "100%" }}
+            className="object-cover rounded-3xl"
           />
           {uploadProgress > 0 && uploadProgress < 100 && (
             <div
+            className="rounded-3xl"
               style={{
                 position: "absolute",
                 top: 0,

@@ -1,6 +1,8 @@
 import { signIn, useSession } from "next-auth/react";
 import React, { useState, useEffect, useRef } from "react";
 import Circle from "../api/chat/loadingCircle/circle";
+import { AiOutlineArrowLeft } from "react-icons/ai";
+import Link from "next/dist/client/link";
 
 type userSettingsProps = {
   userName: string;
@@ -60,14 +62,12 @@ const Index = () => {
 
           xhr.onload = () => {
             if (xhr.status === 200 || xhr.status === 201) {
-              update({ name: userSettings.userName })
               try {
                 const response = JSON.parse(xhr.responseText);
                 setUploadProgress(0);
-
                 resolve(response);
+                update({image: response.data.profileImage , name: userSettings.userName})
               } catch (error) {
-                console.error("Error parsing response:", error);
                 reject(error);
               }
             } else {
@@ -118,9 +118,15 @@ const Index = () => {
   }
 
   return (
-    <div className="flex h-screen items-center justify-center ">
+    <div className="flex h-screen items-center justify-center bg-gradient-to-t from-sky-500 to-sky-100">
       <form className="flex flex-col items-center gap-7 rounded-2xl bg-zinc-200 px-10 pb-10 pt-7 text-center shadow-xl">
-        <h1 className="text-3xl">Settings</h1>
+        <div className="flex items-center w-full">
+          <Link href="/" className="text-2xl flex-1">
+            <AiOutlineArrowLeft />
+          </Link>
+          <h1 className="text-3xl">Settings</h1>
+          <div className="flex-1"></div>
+        </div>
         <div className="relative">
           <img onClick={() => fileInputRef.current?.click()} src={imagePreview} className="max-h-40 max-w-[160px] cursor-pointer rounded-full" alt="Preview" />
           {uploadProgress > 0 && uploadProgress < 100 && (
@@ -152,6 +158,7 @@ const Index = () => {
           type="file"
           ref={fileInputRef}
           onChange={handleImageChange}
+          accept="image/jpeg, image/png, image/jpg"
           className="hidden"
         />
         <button

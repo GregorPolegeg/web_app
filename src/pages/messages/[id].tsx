@@ -13,6 +13,7 @@ import UserNavigation from "~/components/navigation/userNavigation";
 import ConversationSelector from "../api/chat/ConversationSelector/ConversationSelector";
 import Message from "../api/chat/Message/Message";
 import ConversationList from "../api/chat/ConversationList/ConversationList";
+import Image from 'next/image';
 
 interface MessageData {
   id: string;
@@ -34,6 +35,7 @@ const DisplayConversationElement = () => {
   const messageContainerRef = useRef<HTMLDivElement>(null);
   const [cursor, setCursor] = useState(null);
   const [otherMemberName, setOtherMemberName] = useState<string>("");
+  const [conversationName, setConversationName] = useState<string>("");
   const [otherMemberFileUrl, setOtherMemberFileUrl] = useState<string>("");
   const otherMemberId = useRef<string>("");
 
@@ -100,7 +102,7 @@ const DisplayConversationElement = () => {
         messageContainer.removeEventListener("scroll", debouncedHandleScroll);
       };
     }
-  }, [cursor,loadOldMessages]);
+  }, [cursor, loadOldMessages]);
 
   async function handleDeleteMessage(messageId: string) {
     try {
@@ -146,6 +148,8 @@ const DisplayConversationElement = () => {
         setMessages(data.items);
         setCursor(data.nextCursor);
         setOtherMemberName(data.otherMemberName);
+        setConversationName(data.conversationName);
+        console.log(data.conversationName);
         otherMemberId.current = data.otherMemberId;
       }
     } catch (error) {
@@ -284,7 +288,7 @@ const DisplayConversationElement = () => {
         <div
           className={`${
             selectedConversation != null ? "flex" : "hidden"
-          } h-full w-full flex-col bg-gray-100  pb-5 md:flex md:pt-[65px]`}
+          } h-full w-full flex-col bg-gray-100  pb-5 md:flex md:pt-[55px]`}
         >
           <div className="flex h-[53px] w-full items-center justify-between border-b border-zinc-200 bg-white p-5 shadow-sm">
             {selectedConversation && selectedConversation != "t" ? (
@@ -297,12 +301,18 @@ const DisplayConversationElement = () => {
                   >
                     <AiOutlineArrowLeft className="text-2xl" />
                   </button>
-                  <img
-                    className="ml-5 mr-3 h-10 w-10 rounded-full object-cover"
-                    src={`../${otherMemberFileUrl}`}
+                  <Image
+                    width={40}
+                    height={40}
+                    className="ml-5 mr-3 rounded-full object-cover "
+                    src={`/../${otherMemberFileUrl}`}
+                    layout="fixed"
+                    objectFit="cover"
                     alt="Logo"
                   />
-                  <h2 className="text-xl font-bold">{otherMemberName}</h2>
+                    <h2 className="text-xl font-bold">
+                      {otherMemberName}
+                    </h2>
                 </div>
                 <div className="no-highlight flex gap-1 rounded-3xl bg-blue-600 text-xl text-white">
                   <button className=" rounded-3xl px-2 py-2 hover:bg-blue-500">

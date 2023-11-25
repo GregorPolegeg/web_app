@@ -59,28 +59,50 @@ export default async function handler(
 
             const dbImagePath = `${directoryPath}/${file.originalFilename}`;
 
-            if (fileType === "image") {
-              const compressedImageBuffer = await sharp(
-                await fs.readFile(file.filepath),
-              )
-                .jpeg({ quality: 80 })
-                .toBuffer();
-              await fs.writeFile(dbImagePath, compressedImageBuffer);
+            const image = sharp(await fs.readFile(file.filepath));
+            const metadata = await image.metadata();
+            
+            if (metadata.width && metadata.height) {
+              const minDimension = Math.min(metadata.width, metadata.height);
+              const cropX = (metadata.width - minDimension) / 2;
+              const cropY = (metadata.height - minDimension) / 2;
+            
+              if (fileType === "image") {
+                let pipeline = image.extract({
+                  left: Math.floor(cropX),
+                  top: Math.floor(cropY),
+                  width: minDimension,
+                  height: minDimension,
+                });
+            
+                if (minDimension > 1080) {
+                  pipeline = pipeline.resize(1080, 1080);
+                }
+            
+                const compressedImageBuffer = await pipeline
+                  .jpeg({ quality: 100 })
+                  .toBuffer();
+            
+                await fs.writeFile(dbImagePath, compressedImageBuffer);
+              }
+            
+              imagePath = `members/${userId}/${file.originalFilename}`;
+            } else {
+              throw new Error("Unable to retrieve image dimensions.");
             }
-
-            imagePath = `members/${userId}/${file.originalFilename}`;
+            
           }
         }
-      }else{
+      } else {
         const imageUrl = await db.user.findFirst({
-          where:{
-            id: userId
+          where: {
+            id: userId,
           },
-          select:{
-            profileImage: true
-          }
-        })
-        imagePath = imageUrl?.profileImage
+          select: {
+            profileImage: true,
+          },
+        });
+        imagePath = imageUrl?.profileImage;
       }
 
       const updatedUser = await db.user.update({
