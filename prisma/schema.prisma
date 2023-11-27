@@ -85,18 +85,59 @@ model Review {
 
 model Member {
     id String @id @default(uuid())
-
     userId String
-    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-    Messages Messsage[]
-
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+    messages Messsage[]
     directMessages DirectMessage[]
-
     conversationsInitiated Conversation[] @relation("MemberOne")
-    conversationsRecived   Conversation[] @relation("MemberTwo")
-
+    conversationsRecived Conversation[] @relation("MemberTwo")
+    posts Post[]
+    comments Comment[]
+    likes Like[]
     @@index([userId])
+}
+
+model Post {
+    id String @id @default(uuid())
+    title String
+    imageUrl String?
+    description String?
+    memberId String
+    member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+    comments Comment[] 
+    likes Like[]
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([memberId])
+}
+
+model Comment {
+    id String @id @default(uuid())
+    text String
+    postId String?
+    post Post? @relation(fields: [postId], references: [id], onDelete: Cascade)
+    parentId String?
+    parent Comment? @relation("ParentComment", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    replies Comment[] @relation("ParentComment")
+    memberId String
+    member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+    createdAt DateTime @default(now())
+
+    @@index([parentId])
+    @@index([memberId])
+    @@index([postId])
+}
+
+model Like {
+    id String @id @default(uuid())
+    postId String
+    post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+    memberId String
+    member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+    @@index([postId])
+    @@index([memberId])
 }
 
 model Channel {
@@ -181,3 +222,5 @@ model VerificationToken {
 
     @@unique([identifier, token])
 }
+
+
