@@ -80,7 +80,7 @@ const MessageOptions: React.FC<MessageOptionsProps> = ({
             onClick={() => handleDeleteMessage(messageId)}
           />
           <FaRegCopy
-            className={"hover:text-zinc-700"}
+            className={"hover:text-zinc-700 text-bold"}
             onClick={() => copyTextToClipboard(messageContent)}
           />
           <small className="block text-sm text-gray-700">{timeString}</small>

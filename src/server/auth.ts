@@ -83,9 +83,10 @@ export const authOptions: NextAuthOptions = {
         const existingUser = await db.user.findUnique({
           where: { email: credentials.email },
         });
+        console.log(existingUser);
 
         if (!existingUser) {
-          throw new Error("Gmail incorrect");
+          throw new Error("Email incorrect");
         }
         if (existingUser.platformType != UserType.NORMAL) {
           throw new Error("Sign with gmail");
