@@ -67,10 +67,13 @@ export default async function handler(
         
             if (fileType === 'image') {
               const compressedImageBuffer = await sharp(await fs.readFile(file.filepath))
-                .jpeg({ quality: 80 })
-                .toBuffer();
-        
-              await fs.writeFile(dbImagePath, compressedImageBuffer);
+              .rotate() 
+              .withMetadata({ orientation: 1 }) 
+              .jpeg({ quality: 80 })
+              .toBuffer();
+            
+            await fs.writeFile(dbImagePath, compressedImageBuffer);
+            
         
             } else if (fileType === 'video') {
               const outputPath = `${directoryPath}/compressed-${file.originalFilename}`;

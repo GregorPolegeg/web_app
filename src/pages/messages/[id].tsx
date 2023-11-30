@@ -150,7 +150,6 @@ const DisplayConversationElement = () => {
         setCursor(data.nextCursor);
         setOtherMemberName(data.otherMemberName);
         setConversationName(data.conversationName);
-        console.log(data.conversationName);
         otherMemberId.current = data.otherMemberId;
       }
     } catch (error) {

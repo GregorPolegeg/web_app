@@ -32,7 +32,6 @@ export default async function handler(
     return res.status(200).json({ message: "Success" , parseUserInfo});
 
   } catch (e) {
-    console.error(e);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 }

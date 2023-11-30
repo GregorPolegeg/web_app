@@ -4,13 +4,18 @@ import { Controller, useForm } from "react-hook-form";
 import Circle from "../chat/loadingCircle/circle";
 import { CiCirclePlus } from "react-icons/ci";
 import { VscSend } from "react-icons/vsc";
+import { PostProp } from "./feedProps";
 
 interface FormDataProps {
-    postTitle: string;
-    postDescription: string;
+  postTitle: string;
+  postDescription: string;
 }
 
-const NewPostInput = () => {
+type NewPostInputProps = {
+  addNewPost: (newPosts: PostProp) => void;
+};
+
+const NewPostInput: React.FC<NewPostInputProps> = ({addNewPost}) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const imageRef = useRef<File | null>(null);
   const [imageLoading, setImageLoading] = useState(false);
@@ -72,6 +77,7 @@ const NewPostInput = () => {
               setUploadProgress(0);
 
               resolve(response);
+              addNewPost(response.data);
             } catch (error) {
               console.error("Error parsing response:", error);
               reject(error);

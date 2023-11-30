@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { type GetServerSidePropsContext } from "next";
 import {
@@ -83,7 +84,6 @@ export const authOptions: NextAuthOptions = {
         const existingUser = await db.user.findUnique({
           where: { email: credentials.email },
         });
-        console.log(existingUser);
 
         if (!existingUser) {
           throw new Error("Email incorrect");

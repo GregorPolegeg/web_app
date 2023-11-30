@@ -1,4 +1,4 @@
-import { signIn, useSession } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
 import React, { useState, useEffect, useRef } from "react";
 import Circle from "../api/chat/loadingCircle/circle";
 import { AiOutlineArrowLeft } from "react-icons/ai";
@@ -168,6 +168,7 @@ const Index = () => {
         >
           Update Settings
         </button>
+        <button onClick={() => void signOut()}> signOut</button>
       </form>
     </div>
   );

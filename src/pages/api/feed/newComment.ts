@@ -1,15 +1,17 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { db } from "src/lib/db";
-import Like from "./Like";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
   if (req.method === "POST") {
-    const { memberId, postId } = req.body;
+    const { memberId, postId, comment } = req.body;
     if (!memberId) {
       return res.status(400).json({ message: "No memberId" });
+    }
+    if (!comment) {
+      return res.status(400).json({ message: "No comment body" });
     }
 
     if (!postId) {
@@ -18,6 +20,13 @@ export default async function handler(
 
     const member = await db.member.findFirst({
       where: { id: memberId },
+      include: {
+        user: {
+          select: {
+            name: true,
+          },
+        },
+      },
     });
 
     const post = await db.post.findFirst({
@@ -32,35 +41,27 @@ export default async function handler(
       return res.status(404).json({ message: "Access denied" });
     }
 
-    const checkLike = await db.like.findFirst({
-      where: {
-        postId: postId,
-        memberId: memberId,
-      },
-    });
-
-    if (checkLike) {
-      const deletedLike = await db.like.delete({
-        where: {
-          id: checkLike.id,
-        },
-      });
-      return res.status(200).json({ message: "Removed like successfully", data: false });
-    }
-
-    const newLike = await db.like.create({
+    const newComment = await db.comment.create({
       data: {
-        postId: postId,
         memberId: memberId,
+        text: comment,
+        postId: postId,
       },
     });
 
-    if (!Like) {
-      return res.status(403).json({ message: "Error adding like" });
+    if (!newComment) {
+      return res.status(404).json({ message: "Action failed" });
     }
-    return res
-      .status(201)
-      .json({ message: "Like successfully created", data: true });
+
+    return res.status(201).json({
+      message: "Like successfully created",
+      data: {
+        id: newComment.id,
+        userName: member.user.name,
+        comment: newComment.text,
+        postId: newComment.postId,
+      },
+    });
   }
 
   return res.status(405).json({ message: "Method not allowed" });

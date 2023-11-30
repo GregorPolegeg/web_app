@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { GrMail } from "react-icons/gr";
 import { BsFillPersonFill } from "react-icons/bs";
-import { AiOutlineEyeInvisible, AiOutlineEye } from "react-icons/ai";
 import { IoMdLock } from "react-icons/io";
 import { signIn } from "next-auth/react";
 import Link from "next/link";

@@ -34,7 +34,6 @@ const ConversationSettings: React.FC<ConversationSettingsProps> = ({
       });
       if (response.ok) {
         const data = await response.json();
-        console.log(":P")
       }
     } catch (error) {
       console.error("An error occurred while fetching older messages:", error);

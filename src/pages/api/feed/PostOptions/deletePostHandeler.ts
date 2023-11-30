@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { db } from "src/lib/db";
-import Like from "./Like";
 
 export default async function handler(
   req: NextApiRequest,
@@ -31,37 +30,19 @@ export default async function handler(
     if (!post) {
       return res.status(404).json({ message: "Access denied" });
     }
-
-    const checkLike = await db.like.findFirst({
-      where: {
-        postId: postId,
-        memberId: memberId,
-      },
-    });
-
-    if (checkLike) {
-      const deletedLike = await db.like.delete({
-        where: {
-          id: checkLike.id,
-        },
-      });
-      return res.status(200).json({ message: "Removed like successfully", data: false });
+    if(post.memberId !== memberId){
+        return res.status(404).json({ message: "Access denied" });
     }
 
-    const newLike = await db.like.create({
-      data: {
-        postId: postId,
-        memberId: memberId,
-      },
-    });
+    const deletedPost = await db.post.delete({
+        where:{
+            id: postId
+        }
+    })
 
-    if (!Like) {
-      return res.status(403).json({ message: "Error adding like" });
+      return res.status(200).json({ message: "Post removed successfully", data: {postId: deletedPost.id} });
     }
-    return res
-      .status(201)
-      .json({ message: "Like successfully created", data: true });
-  }
 
+                                                             
   return res.status(405).json({ message: "Method not allowed" });
 }
