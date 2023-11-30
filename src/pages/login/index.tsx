@@ -15,7 +15,7 @@ export default function Login() {
       <main
         className={
           poppins.className +
-          " justify-cente flex min-h-screen flex-col items-center bg-white"
+          " justify-center flex min-h-screen flex-col items-center bg-white"
         }
       >
         <UserNavigation/>
