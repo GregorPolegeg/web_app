@@ -1,14 +1,15 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-
-interface Notification {
-  text: string;
-  type: string;
-}
+import Notification from "../tools/Notification/Notification";
 
 interface NotificationContextType {
-  notification: Notification | null;
-  showNotification: (text: string, type: string) => void;
+  notification: NotificationState | null;
+  showNotification: (text: string, type: "Success" | "Error" | "Notification") => void;
   hideNotification: () => void;
+}
+
+interface NotificationState {
+  text: string;
+  type: "Success" | "Error" | "Notification";
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -26,19 +27,29 @@ interface NotificationProviderProps {
 }
 
 export const NotificationProvider: React.FC<NotificationProviderProps> = ({ children }) => {
-  const [notification, setNotification] = useState<Notification | null>(null);
+  const [notification, setNotification] = useState<NotificationState | null>(null);
 
-  const showNotification = (text: string, type: string) => {
+  const showNotification = (text: string, type: "Success" | "Error" | "Notification") => {
     setNotification({ text, type });
+    setTimeout(() => {
+      setNotification(null);
+    }, 6000);
   };
 
   const hideNotification = () => {
     setNotification(null);
   };
 
+  const contextValue: NotificationContextType = {
+    notification,
+    showNotification,
+    hideNotification,
+  };
+
   return (
-    <NotificationContext.Provider value={{ notification, showNotification, hideNotification }}>
+    <NotificationContext.Provider value={contextValue}>
       {children}
+      {notification && <Notification text={notification.text} type={notification.type} />}
     </NotificationContext.Provider>
   );
 };

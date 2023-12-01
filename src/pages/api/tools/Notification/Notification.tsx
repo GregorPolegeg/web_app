@@ -53,14 +53,15 @@ const Notification: React.FC<NotificationProps> = ({ text, type }) => {
     };
   }, []);
 
-
   if (!visible) {
     return null;
   }
 
   return (
     <div
-      className={`fade-in fixed top-5 md:bottom-5 md:top-auto rounded-xl ${bgColor} border ${borderColor} ${fadeOut ? "fade-out" : ''} flex items-center justify-center p-3 `}
+      className={`fade-in fixed bottom-5 left-1/2 -translate-x-1/2 transform rounded-xl ${bgColor} border ${borderColor} ${
+        fadeOut ? "fade-out" : ""
+      } flex items-center justify-center p-3 `}
     >
       {icon}
       <span className={`pl-3 ${textColor}`}>{text}</span>

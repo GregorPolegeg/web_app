@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Circle from "../api/chat/loadingCircle/circle";
 import { AiOutlineArrowLeft } from "react-icons/ai";
 import Link from "next/dist/client/link";
+import { useNotification } from "../api/providers/notification-provider";
 
 type userSettingsProps = {
   userName: string;
@@ -17,6 +18,7 @@ const Index = () => {
   const [imagePreview, setImagePreview] = useState<string>("");
   const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { showNotification } = useNotification();
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -63,9 +65,11 @@ const Index = () => {
           xhr.onload = () => {
             if (xhr.status === 200 || xhr.status === 201) {
               try {
+                
                 const response = JSON.parse(xhr.responseText);
                 setUploadProgress(0);
                 resolve(response);
+                showNotification("Settings updated successfuly", "Success");
                 update({image: response.data.profileImage , name: userSettings.userName})
               } catch (error) {
                 reject(error);
