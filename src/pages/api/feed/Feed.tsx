@@ -1,23 +1,20 @@
 import React, { useEffect, useState } from "react";
-import Image from "next/image";
-import { FaRegComment } from "react-icons/fa";
 import NewPostInput from "./NewPostInput";
 import { useSession } from "next-auth/react";
 import { PostProp } from "./feedProps";
 import Post from "./Post";
-import Notification from "../tools/Notification/Notification";
+import { useNotification } from "../providers/notification-provider";
 
 const Feed = () => {
   const { data: session } = useSession();
   const [posts, setPosts] = useState<PostProp[]>([]);
   const [postsChanged, setPostsChanged] = useState(false);
-
+  const { showNotification } = useNotification();
   function addNewPost(newPost: PostProp) {
     const updatedPosts = [...posts, newPost];
     setPosts(updatedPosts);
     setPostsChanged(!postsChanged);
   }
-
 
   useEffect(() => {
     const getPosts = async () => {
@@ -29,8 +26,10 @@ const Feed = () => {
         });
         if (response.ok) {
           const data = await response.json();
+          showNotification("You have successfuly created a new post","Success");
           setPosts(data);
         } else {
+          showNotification("An error has accured while creating a conversation","Error");
           console.error("Failed to get conversations", response);
         }
       } catch (error) {
@@ -65,7 +64,6 @@ const Feed = () => {
           ))}
         ;
       </div>
-      <Notification text={"You have successfuly created a new post"} type={"Success"}/>
     </div>
   );
 };

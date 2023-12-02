@@ -1,6 +1,5 @@
 import { useSession } from "next-auth/react";
 import React, { useEffect, useRef, useState } from "react";
-import { BsTrash } from "react-icons/bs";
 import { getFileType } from "../getFileType/getFileType";
 import ImageModal from "../ImageModal/ImageModal";
 import MessageOptions from "./MessageOptions";

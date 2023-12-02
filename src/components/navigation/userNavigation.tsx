@@ -3,8 +3,6 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   AiOutlineAppstore,
-  AiOutlineBranches,
-  AiOutlineClose,
 } from "react-icons/ai";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { IoHomeOutline } from "react-icons/io5";
@@ -27,7 +25,7 @@ const UserNavigation = () => {
   if (sessionData?.user.id) {
     return (
       <>
-        <nav className="fixed bottom-0 flex w-full flex-row items-center justify-center bg-zinc-200 shadow-sm md:bottom-auto md:top-0 md:flex-row md:justify-between md:bg-white md:px-7 md:py-0">
+        <nav className="z-10 md:z-0 fixed bottom-0 flex w-full flex-row items-center justify-center bg-zinc-200 shadow-sm md:bottom-auto md:top-0 md:flex-row md:justify-between md:bg-white md:px-7 md:py-0">
           {/* Logo */}
           <div className="hidden md:flex ">
             <Image width={55} height={55} src="/images/logo.png" alt="Logo" />

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { MdError, MdCheckCircle, MdInfo } from "react-icons/md";
+import { MdError, MdCheckCircle, MdInfo, MdWarning } from "react-icons/md";
 
 type NotificationProps = {
   text: string;
-  type: "Success" | "Error" | "Notification";
+  type: "Success" | "Error" | "Notification" | "Warning";
 };
 
 const Notification: React.FC<NotificationProps> = ({ text, type }) => {
@@ -34,6 +34,12 @@ const Notification: React.FC<NotificationProps> = ({ text, type }) => {
       textColor = "text-white";
       icon = <MdInfo className="text-2xl text-white" />;
       break;
+    case "Warning":
+      bgColor = "bg-yellow-500";
+      borderColor = "border-yellow-700";
+      textColor = "text-white";
+      icon = <MdWarning className="text-2xl text-white" />;
+      break;
     default:
       break;
   }
@@ -59,12 +65,14 @@ const Notification: React.FC<NotificationProps> = ({ text, type }) => {
 
   return (
     <div
-      className={`fade-in fixed bottom-5 left-1/2 -translate-x-1/2 transform rounded-xl ${bgColor} border ${borderColor} ${
+      className={`fade-in fixed top-5 md:bottom-5 md:top-auto w-full flex items-center  justify-center ${
         fadeOut ? "fade-out" : ""
-      } flex items-center justify-center p-3 `}
+      }`}
     >
-      {icon}
-      <span className={`pl-3 ${textColor}`}>{text}</span>
+      <div className={`flex items-center justify-center p-3 border ${bgColor} ${borderColor} rounded-xl`}>
+        {icon}
+        <span className={`pl-3 ${textColor}`}>{text}</span>
+      </div>
     </div>
   );
 };

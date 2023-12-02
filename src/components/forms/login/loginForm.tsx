@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { GrMail } from "react-icons/gr";
-import { AiOutlineEyeInvisible, AiOutlineEye } from "react-icons/ai";
 import { IoMdLock } from "react-icons/io";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { FormInputField } from "~/pages/api/form/InputField/InputField";
+import { useNotification } from "~/pages/api/providers/notification-provider";
 
 interface FormData {
   email: string;
@@ -21,10 +21,9 @@ const LoginForm = () => {
     formState: { errors },
   } = useForm<FormData>();
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const [signInError, setSignInError] = useState("");
 
   const togglePasswordVisibility = () => setPasswordVisible(!passwordVisible);
-
+  const { showNotification } = useNotification();
   const onSubmit = async (data: FormData) => {
     try {
       const signInData = await signIn("credentials", {
@@ -33,9 +32,8 @@ const LoginForm = () => {
         password: data.password,
         callbackUrl: "/",
       });
-
       if (signInData?.error) {
-        setSignInError(signInData.error);
+        showNotification(signInData?.error, "Error")
       } else {
         router.push("/");
       }
@@ -50,10 +48,6 @@ const LoginForm = () => {
         <form className="flex flex-col p-5" onSubmit={handleSubmit(onSubmit)}>
           <h1 className="pb-10 text-center text-4xl font-bold">Login</h1>
 
-          {/* Sign-In Error Message */}
-          {signInError && (
-            <p className="text-center text-red-500">{signInError}</p>
-          )}
           {/* Email Field */}
           <FormInputField
             control={control}

@@ -43,6 +43,12 @@ const DisplayConversationElement = () => {
   const router = useRouter();
   
 
+  function callDanny(selectedConversation: string){
+    if(selectedConversation !== "t"){
+      socket.emit("callDanny", {conversationId: selectedConversation, memberId: session?.user.memberId});
+    }
+  }
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -194,11 +200,11 @@ const DisplayConversationElement = () => {
   function joinConversation(conversation: string) {
     if (socket) {
       socket.emit("joinConversation", conversation);
-      socket.emit("disconnectOnConversation", {
-        conversationId: selectedConversation,
+      socket.emit("activeOnConversation", {
+        conversationId: conversation,
         memberId: session?.user.memberId,
       });
-      socket.emit("activeOnConversation", {
+      socket.emit("disconnectOnConversation", {
         conversationId: conversation,
         memberId: session?.user.memberId,
       });
@@ -242,6 +248,12 @@ const DisplayConversationElement = () => {
         }
       };
 
+      const handlewakeUp = (
+        conversationId: string,
+      ) => {
+        console.log("WakeUp: ", conversationId)
+      };
+
       const handleMessageDeleted = (deletedMessageId: string) => {
         setMessages((messages) =>
           messages.filter((message) => message.id !== deletedMessageId),
@@ -250,10 +262,12 @@ const DisplayConversationElement = () => {
           loadOldMessages();
         }
       };
+      socket.on("wakeUp", handlewakeUp);
       socket.on("newMessage", handleNewMessage);
       socket.on("messageDeleted", handleMessageDeleted);
 
       return () => {
+        socket.off("wakeUp", handlewakeUp);
         socket.off("newMessage", handleNewMessage);
         socket.off("messageDeleted", handleMessageDeleted);
       };
@@ -306,8 +320,6 @@ const DisplayConversationElement = () => {
                     height={40}
                     className="ml-5 mr-3 rounded-full object-cover "
                     src={`/../${otherMemberFileUrl}`}
-                    layout="fixed"
-                    objectFit="cover"
                     alt="Logo"
                   />
                     <h2 className="text-xl font-bold">
@@ -315,7 +327,7 @@ const DisplayConversationElement = () => {
                     </h2>
                 </div>
                 <div className="no-highlight flex gap-1 rounded-3xl bg-blue-600 text-xl text-white">
-                  <button className=" rounded-3xl px-2 py-2 hover:bg-blue-500">
+                  <button onClick={() => callDanny(selectedConversation)} className=" rounded-3xl px-2 py-2 hover:bg-blue-500">
                     <AiOutlineBell />
                   </button>
                   <button className="px-2 py-2 hover:rounded-3xl hover:bg-blue-500">

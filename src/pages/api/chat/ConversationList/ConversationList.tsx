@@ -40,7 +40,8 @@ const ConversationList: React.FC<ConversationListProps> = ({
   );
 
   const [editConversationName, setEditConversationName] = useState<string>("");
-  const [editConversationImage, setEditConversationImage] = useState<string>("");
+  const [editConversationImage, setEditConversationImage] =
+    useState<string>("");
   const [editConversationId, setEditConversationId] = useState<string>("");
   const [editConversationIsOpen, setEditConversationIsOpen] = useState(false);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
@@ -74,7 +75,10 @@ const ConversationList: React.FC<ConversationListProps> = ({
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element;
-      if (editConversationIsOpen && !target.closest(".edit-Contact-Container")) {
+      if (
+        editConversationIsOpen &&
+        !target.closest(".edit-Contact-Container")
+      ) {
         setEditConversationIsOpen(false);
       }
     };
@@ -87,9 +91,13 @@ const ConversationList: React.FC<ConversationListProps> = ({
     };
   }, [editConversationIsOpen]);
 
-  const startLongPress = (conversationName: string, conversationImage: string, conversationID: string) => {
+  const startLongPress = (
+    conversationName: string,
+    conversationImage: string,
+    conversationID: string,
+  ) => {
     longPressTimer.current = setTimeout(() => {
-      editConversation(conversationName,conversationImage, conversationID);
+      editConversation(conversationName, conversationImage, conversationID);
     }, 500);
   };
 
@@ -104,7 +112,11 @@ const ConversationList: React.FC<ConversationListProps> = ({
     event.preventDefault();
   };
 
-  function editConversation(conversationName: string, conversationImage: string,conversationID: string ){
+  function editConversation(
+    conversationName: string,
+    conversationImage: string,
+    conversationID: string,
+  ) {
     setEditConversationName(conversationName);
     setEditConversationImage(conversationImage);
     setEditConversationId(conversationID);
@@ -123,12 +135,13 @@ const ConversationList: React.FC<ConversationListProps> = ({
       );
       if (response.ok) {
         const data = await response.json();
-        if (conversations?.length == 0) {
-          data.forEach((conversation: { id: string }) => {
+        if (conversations === null) {
+          data.forEach((conversation: Conversation) => {
             joinConversation(conversation.id);
           });
-          await joinConversation("t");
         }
+
+        joinConversation("t");
         setConversations(data);
       } else {
         console.error("Failed to get conversations", response);
@@ -142,12 +155,12 @@ const ConversationList: React.FC<ConversationListProps> = ({
     const handleAnyEvent = () => {
       getConversations();
     };
-    socket.onAny(handleAnyEvent);
+    socket.on("newMessage", handleAnyEvent);
 
     return () => {
-      socket.offAny(handleAnyEvent);
+      socket.off("newMessage", handleAnyEvent);
     };
-  }, [socket,editConversationId]);
+  }, [socket]);
 
   useEffect(() => {
     getConversations();
@@ -201,7 +214,16 @@ const ConversationList: React.FC<ConversationListProps> = ({
           <div className="flex flex-col overflow-auto">
             {conversations.map((conversation: Conversation, index) => (
               <div
-                onTouchStart={isTouch ? () => startLongPress(conversation.name, conversation.fileUrl ?? "", conversation.id) : undefined}
+                onTouchStart={
+                  isTouch
+                    ? () =>
+                        startLongPress(
+                          conversation.name,
+                          conversation.fileUrl ?? "",
+                          conversation.id,
+                        )
+                    : undefined
+                }
                 onTouchEnd={isTouch ? endLongPress : undefined}
                 onContextMenu={handleContextMenu}
                 key={conversation.id}
@@ -232,7 +254,6 @@ const ConversationList: React.FC<ConversationListProps> = ({
                       alt="Logo"
                       width={56}
                       height={56}
-                      layout="fixed"
                     />
                   </div>
                   <div className="flex flex-col pl-3">
@@ -273,7 +294,16 @@ const ConversationList: React.FC<ConversationListProps> = ({
                         event.stopPropagation();
                       }}
                     >
-                      <IoMdMore onClick={()=> editConversation(conversation.name,conversation.fileUrl ?? "",conversation.id)} className="text-2xl hidden md:block" />
+                      <IoMdMore
+                        onClick={() =>
+                          editConversation(
+                            conversation.name,
+                            conversation.fileUrl ?? "",
+                            conversation.id,
+                          )
+                        }
+                        className="hidden text-2xl md:block"
+                      />
                     </button>
                   </div>
                 </div>

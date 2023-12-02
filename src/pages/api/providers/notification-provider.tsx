@@ -9,7 +9,7 @@ interface NotificationContextType {
 
 interface NotificationState {
   text: string;
-  type: "Success" | "Error" | "Notification";
+  type: "Success" | "Error" | "Notification" | "Warning";
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -29,7 +29,7 @@ interface NotificationProviderProps {
 export const NotificationProvider: React.FC<NotificationProviderProps> = ({ children }) => {
   const [notification, setNotification] = useState<NotificationState | null>(null);
 
-  const showNotification = (text: string, type: "Success" | "Error" | "Notification") => {
+  const showNotification = (text: string, type: "Success" | "Error" | "Notification" | "Warning") => {
     setNotification({ text, type });
     setTimeout(() => {
       setNotification(null);
