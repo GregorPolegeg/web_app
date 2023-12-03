@@ -26,10 +26,8 @@ const Feed = () => {
         });
         if (response.ok) {
           const data = await response.json();
-          showNotification("You have successfuly created a new post","Success");
           setPosts(data);
         } else {
-          showNotification("An error has accured while creating a conversation","Error");
           console.error("Failed to get conversations", response);
         }
       } catch (error) {
@@ -47,6 +45,7 @@ const Feed = () => {
         {posts &&
           posts.map((post) => (
             <Post
+              key={post.id}
               id={post.id}
               title={post.title}
               image={post.image}
@@ -61,8 +60,7 @@ const Feed = () => {
               postsChanged={postsChanged}
               posts={posts}
             />
-          ))}
-        ;
+          ))};
       </div>
     </div>
   );

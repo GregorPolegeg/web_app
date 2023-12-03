@@ -87,7 +87,7 @@ export const ChatInput = ({
                   setImagePreview(null);
 
                   setUploadProgress(0);
-                  
+
                   socket.emit(`newMessage`, {
                     conversationId,
                     message: response.data,
@@ -144,11 +144,11 @@ export const ChatInput = ({
             src={imagePreview}
             alt="Preview"
             style={{ width: "100%", height: "100%" }}
-            className="object-cover rounded-3xl"
+            className="rounded-3xl object-cover"
           />
           {uploadProgress > 0 && uploadProgress < 100 && (
             <div
-            className="rounded-3xl"
+              className="rounded-3xl"
               style={{
                 position: "absolute",
                 top: 0,
@@ -183,14 +183,16 @@ export const ChatInput = ({
             },
           }}
           render={({ field }) => (
-            <div className="flex items-center flex-grow gap-2 rounded-md border-gray-400 bg-white p-2 shadow-sm focus:shadow-lg">
-                <CiCirclePlus
-                  onClick={() =>
-                    document.getElementById("imageUpload")?.click()
-                  }
-                  className="text-2xl hover:cursor-pointer hover:text-zinc-700"
-                />
-                <MicrophoneRecorder conversationId={conversationId} memberId={senderId} otherMemderId={otherMemberId}/>
+            <div className="flex flex-grow items-center gap-2 rounded-md border-gray-400 bg-white p-2 shadow-sm focus:shadow-lg">
+              <CiCirclePlus
+                onClick={() => document.getElementById("imageUpload")?.click()}
+                className="text-2xl hover:cursor-pointer hover:text-zinc-700"
+              />
+              <MicrophoneRecorder
+                conversationId={conversationId}
+                memberId={senderId}
+                otherMemderId={otherMemberId}
+              />
               <input
                 {...field}
                 ref={inputRef}
@@ -208,7 +210,13 @@ export const ChatInput = ({
         />
         <VscSend
           onClick={() => {
-            handleSubmit(onSubmit)();
+            if (
+              conversationId !== "" &&
+              conversationId !== null &&
+              (uploadProgress === 0)
+            ) {
+              handleSubmit(onSubmit)();
+            }
             inputRef.current?.focus();
           }}
           className="hover: ml-2 cursor-pointer text-xl"

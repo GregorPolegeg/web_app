@@ -13,14 +13,14 @@ const MyApp: AppType<{ session: Session | null }> = ({
   pageProps: { session, ...pageProps },
 }) => {
   return (
-    <NotificationProvider>
-      <SocketProvider>
-        <SessionProvider session={session}>
+    <SocketProvider>
+      <SessionProvider session={session}>
+        <NotificationProvider>
           <link rel="manifes" href="/manifest.json" />
           <Component {...pageProps} />
-        </SessionProvider>
-      </SocketProvider>
-    </NotificationProvider>
+        </NotificationProvider>
+      </SessionProvider>
+    </SocketProvider>
   );
 };
 

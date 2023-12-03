@@ -48,19 +48,30 @@ app.prepare().then(() => {
       }
     });
 
-    socket.on("callDanny", ({conversationId, memberId }) => {
+    socket.on("callDanny", ({ conversationId, memberId }) => {
       const conversation = activeMembers[conversationId];
+    
       if (conversation) {
+        const memberIds = Object.keys(conversation);
+        if (memberIds.length === 1 && memberIds.includes(memberId)) {
+          socket.emit("dannyNotAvailable");
+          return;
+        }
         for (const otherMemberId in conversation) {
           if (otherMemberId !== memberId) {
             const socketIds = Object.keys(conversation[otherMemberId]);
-            for (const socketId of socketIds) {
-              io.to(socketId).emit("wakeUp", conversationId);
+            if (socketIds.length === 0) {
+              socket.emit("dannyNotAvailable");
+            } else {
+              for (const socketId of socketIds) {
+                io.to(socketId).emit("wakeUp", conversationId);
+              }
             }
           }
         }
       }
     });
+    
     socket.on("disconnectOnConversation", ({ conversationId, memberId }) => {
       if (
         activeMembers[conversationId] &&
@@ -76,7 +87,10 @@ app.prepare().then(() => {
     socket.on("disconnect", () => {
       for (const conversationId in activeMembers) {
         for (const memberId in activeMembers[conversationId]) {
-          if (activeMembers[conversationId][memberId][socket.id] == true || activeMembers[conversationId][memberId][socket.id] == false ) {
+          if (
+            activeMembers[conversationId][memberId][socket.id] == true ||
+            activeMembers[conversationId][memberId][socket.id] == false
+          ) {
             delete activeMembers[conversationId][memberId][socket.id];
 
             if (activeMembers[conversationId][memberId].length === 0) {

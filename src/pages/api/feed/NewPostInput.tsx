@@ -5,6 +5,7 @@ import Circle from "../chat/loadingCircle/circle";
 import { CiCirclePlus } from "react-icons/ci";
 import { VscSend } from "react-icons/vsc";
 import { PostProp } from "./feedProps";
+import { useNotification } from "../providers/notification-provider";
 
 interface FormDataProps {
   postTitle: string;
@@ -22,6 +23,7 @@ const NewPostInput: React.FC<NewPostInputProps> = ({addNewPost}) => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const { data: session } = useSession();
+  const { showNotification } = useNotification();
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -42,7 +44,6 @@ const NewPostInput: React.FC<NewPostInputProps> = ({addNewPost}) => {
   };
 
   const onSubmit = (data: FormDataProps) => {
-    reset();
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       if (session?.user.memberId) {
@@ -54,7 +55,15 @@ const NewPostInput: React.FC<NewPostInputProps> = ({addNewPost}) => {
         const { postDescription, postTitle } = data;
 
         formData.append("memberId", session?.user.memberId);
+        if(!postTitle){ 
+          showNotification("Post title is required","Error");       
+          return;
+        }
         formData.append("title", postTitle);
+        if(!imageRef.current && !postDescription){
+          showNotification("Post description or image required","Error");
+          return;
+        }
         formData.append("description", postDescription);
 
         xhr.open("POST", "/api/feed/newPost");
@@ -77,6 +86,7 @@ const NewPostInput: React.FC<NewPostInputProps> = ({addNewPost}) => {
               setUploadProgress(0);
 
               resolve(response);
+              reset();
               addNewPost(response.data);
             } catch (error) {
               console.error("Error parsing response:", error);

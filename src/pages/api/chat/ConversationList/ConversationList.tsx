@@ -25,7 +25,6 @@ type ConversationListProps = {
   setSelectedConversation: (id: string) => void;
   onOpenConversation: (id: string, fileUrl: string) => void;
   joinConversation: (conversationId: string) => void;
-  setOtherMemberFileUrl: (fileUrl: string) => void;
 };
 
 const ConversationList: React.FC<ConversationListProps> = ({
@@ -33,7 +32,6 @@ const ConversationList: React.FC<ConversationListProps> = ({
   setSelectedConversation,
   onOpenConversation,
   joinConversation,
-  setOtherMemberFileUrl,
 }) => {
   const [conversations, setConversations] = useState<Conversation[] | null>(
     null,
@@ -46,7 +44,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
   const [editConversationIsOpen, setEditConversationIsOpen] = useState(false);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
   const [isTouch, setIsTouch] = useState(false);
-
+  const touchStartPosition = useRef({ x: 0, y: 0 });
   const { data: session } = useSession();
   const { socket } = useSocket();
   const router = useRouter();
@@ -98,7 +96,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
   ) => {
     longPressTimer.current = setTimeout(() => {
       editConversation(conversationName, conversationImage, conversationID);
-    }, 500);
+    }, 1500);
   };
 
   const endLongPress = () => {
@@ -135,13 +133,6 @@ const ConversationList: React.FC<ConversationListProps> = ({
       );
       if (response.ok) {
         const data = await response.json();
-        if (conversations === null) {
-          data.forEach((conversation: Conversation) => {
-            joinConversation(conversation.id);
-          });
-        }
-
-        joinConversation("t");
         setConversations(data);
       } else {
         console.error("Failed to get conversations", response);
@@ -165,16 +156,6 @@ const ConversationList: React.FC<ConversationListProps> = ({
   useEffect(() => {
     getConversations();
   }, []);
-
-  useEffect(() => {
-    if (session) {
-      const foundCoversaiont = conversations?.find(
-        (convo) => convo.id === router.query.id,
-      );
-      const fileUrl = foundCoversaiont?.fileUrl;
-      setOtherMemberFileUrl(fileUrl ?? "");
-    }
-  }, [router.query.id, conversations]);
 
   return (
     <div

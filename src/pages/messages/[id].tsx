@@ -14,6 +14,8 @@ import ConversationSelector from "../api/chat/ConversationSelector/ConversationS
 import Message from "../api/chat/Message/Message";
 import ConversationList from "../api/chat/ConversationList/ConversationList";
 import Image from 'next/image';
+import { useNotification } from "../api/providers/notification-provider";
+import { getConversationImage } from "./getConversationImage";
 
 interface MessageData {
   id: string;
@@ -38,7 +40,7 @@ const DisplayConversationElement = () => {
   const [conversationName, setConversationName] = useState<string>("");
   const [otherMemberFileUrl, setOtherMemberFileUrl] = useState<string>("");
   const otherMemberId = useRef<string>("");
-
+  const { showNotification } = useNotification();
   const topSentinelRef = useRef(null);
   const router = useRouter();
   
@@ -212,30 +214,38 @@ const DisplayConversationElement = () => {
   }
 
   useEffect(() => {
-    if (session) {
-      setCursor(null);
-      setMessages([]);
-      const conversationId = router.query.id as string;
-      if (socket) {
-        socket.emit("joinConversation", conversationId);
-        socket.emit("disconnectOnConversation", {
-          conversationId: selectedConversation,
-          memberId: session?.user.memberId,
-        });
-        socket.emit("activeOnConversation", {
-          conversationId: conversationId,
-          memberId: session?.user.memberId,
-        });
-        if (conversationId === "t") {
-          setSelectedConversation(null);
-          setMessages([]);
-        } else if (conversationId) {
-          setSelectedConversation(conversationId);
-          getDirectMessages(conversationId);
+    const fetchData = async () => {
+      if (session) {
+        setCursor(null);
+        setMessages([]);
+        const conversationId = router.query.id as string;
+  
+        if (socket) {
+          socket.emit("joinConversation", conversationId);
+          socket.emit("disconnectOnConversation", {
+            conversationId: selectedConversation,
+            memberId: session?.user.memberId,
+          });
+          socket.emit("activeOnConversation", {
+            conversationId: conversationId,
+            memberId: session?.user.memberId,
+          });
+  
+          if (conversationId === "t") {
+            setSelectedConversation(null);
+            setMessages([]);
+          } else if (conversationId) {
+            const imageUrl = await getConversationImage(session.user.id, conversationId);
+            setOtherMemberFileUrl(imageUrl?? "../images/avatar_logo.png");
+            setSelectedConversation(conversationId);
+            getDirectMessages(conversationId);
+          }
         }
       }
-    }
+    };
+    fetchData();
   }, [router.query.id, session]);
+  
 
   useEffect(() => {
     if (socket) {
@@ -248,11 +258,9 @@ const DisplayConversationElement = () => {
         }
       };
 
-      const handlewakeUp = (
-        conversationId: string,
-      ) => {
-        console.log("WakeUp: ", conversationId)
-      };
+      const handleDannyNotAvailable = () => {
+        showNotification("Danny is not available","Notification");        
+      }
 
       const handleMessageDeleted = (deletedMessageId: string) => {
         setMessages((messages) =>
@@ -262,14 +270,13 @@ const DisplayConversationElement = () => {
           loadOldMessages();
         }
       };
-      socket.on("wakeUp", handlewakeUp);
       socket.on("newMessage", handleNewMessage);
       socket.on("messageDeleted", handleMessageDeleted);
-
+      socket.on("dannyNotAvailable", handleDannyNotAvailable)
       return () => {
-        socket.off("wakeUp", handlewakeUp);
         socket.off("newMessage", handleNewMessage);
         socket.off("messageDeleted", handleMessageDeleted);
+        socket.off("dannyNotAvailable", handleDannyNotAvailable)
       };
     }
   }, [socket, selectedConversation]);
@@ -277,7 +284,6 @@ const DisplayConversationElement = () => {
   function onOpenConversation(conversationId: string, fileUrl: string) {
     if (conversationId === "t") setOtherMemberName("");
     router.push(`/messages/${conversationId}`);
-    setOtherMemberFileUrl(fileUrl);
   }
 
   if (session?.user.memberId) {
@@ -297,7 +303,6 @@ const DisplayConversationElement = () => {
           setSelectedConversation={setSelectedConversation}
           onOpenConversation={onOpenConversation}
           joinConversation={joinConversation}
-          setOtherMemberFileUrl={setOtherMemberFileUrl}
         />
         <div
           className={`${
