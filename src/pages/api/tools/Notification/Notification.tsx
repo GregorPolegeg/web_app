@@ -5,6 +5,7 @@ import { MdError, MdCheckCircle, MdInfo, MdWarning } from "react-icons/md";
 import { getConversations } from "./joinAllChats";
 import { useSocket } from "../../providers/socket-provider";
 import { useSession } from "next-auth/react";
+import { soundEffect } from "./soundEffect";
 
 type NotificationProps = {
   text: string;
@@ -57,6 +58,7 @@ const Notification: React.FC<NotificationProps> = ({ text, type, link }) => {
     default:
       break;
   }
+  soundEffect();
 
   useEffect(() => {
     const timerfadeOut = setTimeout(() => {
